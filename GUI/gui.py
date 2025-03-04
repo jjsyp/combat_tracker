@@ -48,8 +48,16 @@ class CombatTrackerGUI:
     def save_session(self):
         """Save the current session to the default file"""
         try:
+            # Save character data
             save_path = os.path.join('saves', 'last_session.json')
             self.save_to_file(save_path)
+            
+            # Update combat state
+            state_path = os.path.join('saves', 'combat_state.json')
+            os.makedirs(os.path.dirname(state_path), exist_ok=True)
+            with open(state_path, 'w') as f:
+                json.dump({'in_combat': True}, f)
+                
             messagebox.showinfo("Success", "Session saved successfully!")
         except Exception as e:
             messagebox.showerror("Error", f"Failed to save session: {str(e)}")
@@ -95,14 +103,24 @@ class CombatTrackerGUI:
             messagebox.showerror("Error", f"Failed to load session: {str(e)}")
     
     def load_last_session(self):
-        """Try to load the last session if it exists"""
+        """Try to load the last session if it exists and we're in combat"""
+        state_path = os.path.join('saves', 'combat_state.json')
         last_session_path = os.path.join('saves', 'last_session.json')
-        if os.path.exists(last_session_path):
-            try:
+        
+        try:
+            # Check if we should load the last session
+            if os.path.exists(state_path):
+                with open(state_path, 'r') as f:
+                    state = json.load(f)
+                if not state.get('in_combat', True):
+                    return
+            
+            # Load last session if it exists
+            if os.path.exists(last_session_path):
                 self.load_from_file(last_session_path)
-            except Exception:
-                # Silently fail if last session can't be loaded
-                pass
+        except Exception:
+            # Silently fail if last session can't be loaded
+            pass
     
     def load_from_file(self, file_path):
         """Load characters from a JSON file"""
@@ -160,9 +178,7 @@ class CombatTrackerGUI:
         
         ttk.Button(btn_frame, text="Copy Character", command=self.copy_character).pack(side=tk.LEFT, padx=2)
         ttk.Button(btn_frame, text="Delete", command=self.delete_character).pack(side=tk.LEFT, padx=2)
-        
-        # Bind escape key to cancel editing
-        self.root.bind('<Escape>', lambda e: self.cancel_edit())
+        ttk.Button(btn_frame, text="End Combat", command=self.end_combat).pack(side=tk.LEFT, padx=2)
 
     def get_cell_bbox(self, item, column):
         """Get the bounding box for a cell"""
@@ -504,6 +520,29 @@ class CombatTrackerGUI:
         
         self.characters.pop(idx)
         self.update_character_list()
+
+    def end_combat(self):
+        """End the current combat, clearing all characters and preventing auto-load"""
+        if messagebox.askyesno("End Combat", "Are you sure you want to end combat?\nThis will remove all characters and start fresh next time."):
+            # Clear all characters
+            self.characters.clear()
+            self.update_character_list()
+            
+            # Save empty state file to prevent auto-load next time
+            try:
+                state_path = os.path.join('saves', 'combat_state.json')
+                os.makedirs(os.path.dirname(state_path), exist_ok=True)
+                with open(state_path, 'w') as f:
+                    json.dump({'in_combat': False}, f)
+                
+                # Remove last session file if it exists
+                last_session_path = os.path.join('saves', 'last_session.json')
+                if os.path.exists(last_session_path):
+                    os.remove(last_session_path)
+                    
+                messagebox.showinfo("Success", "Combat ended. Starting fresh next time!")
+            except Exception as e:
+                messagebox.showerror("Error", f"Failed to save combat state: {str(e)}")
 
     def add_custom_field(self, field_name=None, value=None):
         frame = ttk.Frame(self.custom_fields_frame)
