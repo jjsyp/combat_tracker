@@ -1,0 +1,395 @@
+import tkinter as tk
+from tkinter import ttk, messagebox
+from typing import Dict, List
+import copy
+from character.character import Character
+
+class CombatTrackerGUI:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("Combat Tracker")
+        self.characters: List[Character] = []
+        self.custom_fields: List[str] = []
+        self.popup_entry = None
+        
+        # Create main frames
+        self.character_list_frame = ttk.Frame(root)
+        self.character_list_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=5, pady=5)
+        
+        self.character_detail_frame = ttk.Frame(root)
+        self.character_detail_frame.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True, padx=5, pady=5)
+        
+        # Character List
+        self.setup_character_list()
+        
+        # Character Details
+        self.setup_character_details()
+        
+        # Initialize empty selection
+        self.selected_character = None
+    
+    def setup_character_list(self):
+        # Character List Label
+        ttk.Label(self.character_list_frame, text="Characters").pack()
+        
+        # Create Treeview
+        self.character_tree = ttk.Treeview(self.character_list_frame)
+        self.character_tree.pack(fill=tk.BOTH, expand=True)
+        
+        # Add scrollbar
+        scrollbar = ttk.Scrollbar(self.character_list_frame, orient="vertical", command=self.character_tree.yview)
+        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        self.character_tree.configure(yscrollcommand=scrollbar.set)
+        
+        # Configure columns
+        self.character_tree['columns'] = ('name', 'initiative', 'health', 'ac', 'custom_fields')
+        
+        # Format columns
+        self.character_tree.column('#0', width=0, stretch=tk.NO)  # Hidden ID column
+        self.character_tree.column('name', anchor=tk.W, width=120)
+        self.character_tree.column('initiative', anchor=tk.CENTER, width=60)
+        self.character_tree.column('health', anchor=tk.CENTER, width=60)
+        self.character_tree.column('ac', anchor=tk.CENTER, width=60)
+        self.character_tree.column('custom_fields', anchor=tk.W, width=200)
+        
+        # Create headings
+        self.character_tree.heading('#0', text='', anchor=tk.W)
+        self.character_tree.heading('name', text='Name', anchor=tk.W)
+        self.character_tree.heading('initiative', text='Initiative', anchor=tk.CENTER)
+        self.character_tree.heading('health', text='Health', anchor=tk.CENTER)
+        self.character_tree.heading('ac', text='AC', anchor=tk.CENTER)
+        self.character_tree.heading('custom_fields', text='Custom Fields', anchor=tk.W)
+        
+        # Bind double-click event
+        self.character_tree.bind('<Double-1>', self.on_double_click)
+        
+        # Buttons Frame
+        btn_frame = ttk.Frame(self.character_list_frame)
+        btn_frame.pack(fill=tk.X, pady=5)
+        
+        ttk.Button(btn_frame, text="Copy Character", command=self.copy_character).pack(side=tk.LEFT, padx=2)
+        ttk.Button(btn_frame, text="Delete", command=self.delete_character).pack(side=tk.LEFT, padx=2)
+        
+        # Bind escape key to cancel editing
+        self.root.bind('<Escape>', lambda e: self.cancel_edit())
+
+    def get_cell_bbox(self, item, column):
+        """Get the bounding box for a cell"""
+        bbox = self.character_tree.bbox(item, column)
+        if not bbox:
+            return None
+        return bbox
+
+    def on_double_click(self, event):
+        """Handle double-click on tree item"""
+        region = self.character_tree.identify_region(event.x, event.y)
+        if region != "cell":
+            return
+        
+        # Get the item and column that was clicked
+        item = self.character_tree.identify_row(event.y)
+        column = self.character_tree.identify_column(event.x)
+        
+        if not item or not column:
+            return
+            
+        # Get column name from column number
+        column_name = self.character_tree['columns'][int(column[1]) - 1]
+        
+        # Don't edit custom fields directly
+        if column_name == 'custom_fields':
+            self.edit_custom_fields(item)
+            return
+            
+        # Get the current value
+        current_value = self.character_tree.item(item)['values'][int(column[1]) - 1]
+        
+        # Create and position the entry widget
+        self.start_edit(item, column, column_name, str(current_value))
+
+    def start_edit(self, item, column, column_name, current_value):
+        """Start editing a cell"""
+        # Cancel any existing edit
+        self.cancel_edit()
+        
+        # Get cell bbox
+        bbox = self.get_cell_bbox(item, column)
+        if not bbox:
+            return
+        
+        # Create entry widget
+        self.popup_entry = ttk.Entry(self.character_tree)
+        self.popup_entry.insert(0, current_value)
+        self.popup_entry.select_range(0, tk.END)
+        
+        # Position the entry widget
+        self.popup_entry.place(x=bbox[0], y=bbox[1], width=bbox[2], height=bbox[3])
+        
+        # Give focus to the entry
+        self.popup_entry.focus_set()
+        
+        # Bind events
+        self.popup_entry.bind('<Return>', lambda e: self.finish_edit(item, column_name))
+        self.popup_entry.bind('<Escape>', lambda e: self.cancel_edit())
+        self.popup_entry.bind('<FocusOut>', lambda e: self.cancel_edit())
+
+    def finish_edit(self, item, column_name):
+        """Save the edited value"""
+        if not self.popup_entry:
+            return
+            
+        # Get the new value
+        new_value = self.popup_entry.get()
+        
+        # Get the character index
+        items = self.character_tree.get_children()
+        char_index = items.index(item)
+        char = self.characters[char_index]
+        
+        try:
+            # Update the character attribute based on column
+            if column_name == 'name':
+                char.name = new_value
+            elif column_name == 'initiative':
+                char.initiative = int(new_value)
+            elif column_name == 'health':
+                char.health = int(new_value)
+            elif column_name == 'ac':
+                char.ac = int(new_value)
+                
+            # Update the display
+            self.update_character_list()
+            
+        except ValueError:
+            messagebox.showerror("Error", f"Invalid value for {column_name}")
+        
+        self.cancel_edit()
+
+    def cancel_edit(self):
+        """Cancel the current edit"""
+        if self.popup_entry:
+            self.popup_entry.destroy()
+            self.popup_entry = None
+
+    def edit_custom_fields(self, item):
+        """Open a dialog to edit custom fields"""
+        # Get the character
+        items = self.character_tree.get_children()
+        char_index = items.index(item)
+        char = self.characters[char_index]
+        
+        # Create a dialog
+        dialog = tk.Toplevel(self.root)
+        dialog.title("Edit Custom Fields")
+        dialog.transient(self.root)
+        dialog.grab_set()
+        
+        # Create a frame for the fields
+        fields_frame = ttk.Frame(dialog)
+        fields_frame.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
+        
+        # Dictionary to store entry widgets
+        entries = {}
+        
+        # Add existing custom fields
+        row = 0
+        for key, value in char.custom_fields.items():
+            ttk.Label(fields_frame, text="Name:").grid(row=row, column=0, padx=2)
+            name_entry = ttk.Entry(fields_frame)
+            name_entry.insert(0, key)
+            name_entry.grid(row=row, column=1, padx=2)
+            
+            ttk.Label(fields_frame, text="Value:").grid(row=row, column=2, padx=2)
+            value_entry = ttk.Entry(fields_frame)
+            value_entry.insert(0, value)
+            value_entry.grid(row=row, column=3, padx=2)
+            
+            entries[row] = (name_entry, value_entry)
+            row += 1
+        
+        # Add a blank field for new entries
+        ttk.Label(fields_frame, text="Name:").grid(row=row, column=0, padx=2)
+        new_name = ttk.Entry(fields_frame)
+        new_name.grid(row=row, column=1, padx=2)
+        
+        ttk.Label(fields_frame, text="Value:").grid(row=row, column=2, padx=2)
+        new_value = ttk.Entry(fields_frame)
+        new_value.grid(row=row, column=3, padx=2)
+        
+        entries[row] = (new_name, new_value)
+        
+        def save_fields():
+            # Clear existing custom fields
+            char.custom_fields.clear()
+            
+            # Save all non-empty fields
+            for name_entry, value_entry in entries.values():
+                name = name_entry.get().strip()
+                if name:  # Only save if name is not empty
+                    char.custom_fields[name] = value_entry.get()
+            
+            self.update_character_list()
+            dialog.destroy()
+        
+        # Add Save button
+        ttk.Button(dialog, text="Save", command=save_fields).pack(pady=5)
+
+    def setup_character_details(self):
+        # Name Entry
+        ttk.Label(self.character_detail_frame, text="Name:").pack(anchor=tk.W)
+        self.name_var = tk.StringVar()
+        self.name_entry = ttk.Entry(self.character_detail_frame, textvariable=self.name_var)
+        self.name_entry.pack(fill=tk.X, pady=(0, 10))
+        
+        # Initiative Entry
+        ttk.Label(self.character_detail_frame, text="Initiative:").pack(anchor=tk.W)
+        self.initiative_var = tk.StringVar()
+        self.initiative_entry = ttk.Entry(self.character_detail_frame, textvariable=self.initiative_var)
+        self.initiative_entry.pack(fill=tk.X, pady=(0, 10))
+        
+        # Health Frame
+        health_frame = ttk.Frame(self.character_detail_frame)
+        health_frame.pack(fill=tk.X, pady=(0, 10))
+        
+        ttk.Label(health_frame, text="Health:").pack(side=tk.LEFT)
+        self.health_var = tk.StringVar()
+        self.health_entry = ttk.Entry(health_frame, textvariable=self.health_var, width=8)
+        self.health_entry.pack(side=tk.LEFT, padx=5)
+        
+        # AC Entry
+        ttk.Label(self.character_detail_frame, text="Armor Class:").pack(anchor=tk.W)
+        self.ac_var = tk.StringVar()
+        self.ac_entry = ttk.Entry(self.character_detail_frame, textvariable=self.ac_var)
+        self.ac_entry.pack(fill=tk.X, pady=(0, 10))
+        
+        # Custom Fields Frame
+        custom_frame = ttk.LabelFrame(self.character_detail_frame, text="Custom Fields")
+        custom_frame.pack(fill=tk.BOTH, expand=True, pady=5)
+        
+        self.custom_fields_frame = ttk.Frame(custom_frame)
+        self.custom_fields_frame.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
+        
+        # Add Custom Field Button
+        ttk.Button(custom_frame, text="Add Custom Field", 
+                  command=self.add_custom_field).pack(pady=5)
+        
+        # Add Character Button
+        ttk.Button(self.character_detail_frame, text="Add Character", 
+                  command=self.add_character).pack(fill=tk.X, pady=10)
+
+    def add_character(self):
+        try:
+            # Create a new character with the current field values
+            name = self.name_var.get()
+            if not name.strip():
+                messagebox.showerror("Error", "Please enter a name for the character")
+                return
+                
+            char = Character(
+                name=name,
+                initiative=int(self.initiative_var.get() or 0),
+                health=int(self.health_var.get() or 0),
+                ac=int(self.ac_var.get() or 0)
+            )
+            
+            # Add custom fields
+            for frame in self.custom_fields_frame.winfo_children():
+                entries = [w for w in frame.winfo_children() if isinstance(w, ttk.Entry)]
+                if len(entries) == 2:
+                    field_name = entries[0].get().strip()
+                    if field_name:  # Only add if field name is not empty
+                        char.custom_fields[field_name] = entries[1].get()
+            
+            # Add to character list and update display
+            self.characters.append(char)
+            self.update_character_list()
+            
+            # Clear the form for the next character
+            self.clear_character_details()
+            messagebox.showinfo("Success", "Character added successfully!")
+            
+        except ValueError as e:
+            messagebox.showerror("Error", "Please enter valid numbers for Initiative, Health, and AC")
+
+    def clear_character_details(self):
+        self.name_var.set("")
+        self.initiative_var.set("")
+        self.health_var.set("")
+        self.ac_var.set("")
+        
+        for widget in self.custom_fields_frame.winfo_children():
+            widget.destroy()
+
+    def update_character_list(self):
+        # Clear the tree
+        for item in self.character_tree.get_children():
+            self.character_tree.delete(item)
+        
+        # Add characters sorted by initiative
+        for char in sorted(self.characters, key=lambda x: (-x.initiative, x.name)):
+            # Format custom fields as a string
+            custom_fields_str = ', '.join(f"{k}: {v}" for k, v in char.custom_fields.items())
+            
+            self.character_tree.insert(
+                parent='',
+                index='end',
+                values=(
+                    char.name,
+                    char.initiative,
+                    char.health,
+                    char.ac,
+                    custom_fields_str
+                )
+            )
+
+    def copy_character(self):
+        selected = self.character_tree.selection()
+        if not selected:
+            messagebox.showwarning("Warning", "Please select a character to copy")
+            return
+        
+        # Get the index of the selected item
+        items = self.character_tree.get_children()
+        idx = items.index(selected[0])
+        
+        char = self.characters[idx]
+        new_char = copy.deepcopy(char)
+        new_char.name = f"{new_char.name} (Copy)"
+        self.characters.append(new_char)
+        self.update_character_list()
+    
+    def delete_character(self):
+        selected = self.character_tree.selection()
+        if not selected:
+            messagebox.showwarning("Warning", "Please select a character to delete")
+            return
+        
+        # Get the index of the selected item
+        items = self.character_tree.get_children()
+        idx = items.index(selected[0])
+        
+        self.characters.pop(idx)
+        self.update_character_list()
+
+    def add_custom_field(self, field_name=None, value=None):
+        frame = ttk.Frame(self.custom_fields_frame)
+        frame.pack(fill=tk.X, pady=2)
+        
+        name_var = tk.StringVar(value=field_name or "")
+        value_var = tk.StringVar(value=value or "")
+        
+        name_entry = ttk.Entry(frame, textvariable=name_var, width=15)
+        name_entry.pack(side=tk.LEFT, padx=2)
+        
+        value_entry = ttk.Entry(frame, textvariable=value_var)
+        value_entry.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=2)
+        
+        ttk.Button(frame, text="X", width=3,
+                  command=lambda: frame.destroy()).pack(side=tk.RIGHT, padx=2)
+        
+        return frame, name_entry, value_entry
+
+if __name__ == "__main__":
+    root = tk.Tk()
+    app = CombatTrackerGUI(root)
+    root.mainloop()
