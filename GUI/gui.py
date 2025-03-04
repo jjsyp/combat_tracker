@@ -176,7 +176,8 @@ class CombatTrackerGUI:
         btn_frame = ttk.Frame(self.character_list_frame)
         btn_frame.pack(fill=tk.X, pady=5)
         
-        ttk.Button(btn_frame, text="Copy Character", command=self.copy_character).pack(side=tk.LEFT, padx=2)
+        self.copy_button = ttk.Button(btn_frame, text="Copy Character", command=self.copy_character)
+        self.copy_button.pack(side=tk.LEFT, padx=2)
         ttk.Button(btn_frame, text="Delete", command=self.delete_character).pack(side=tk.LEFT, padx=2)
         ttk.Button(btn_frame, text="End Combat", command=self.end_combat).pack(side=tk.LEFT, padx=2)
 
@@ -413,7 +414,7 @@ class CombatTrackerGUI:
             
             # Clear the form for the next character
             self.clear_character_details()
-            #messagebox.showinfo("Success", "Character added successfully!")
+            
             
         except ValueError as e:
             messagebox.showerror("Error", "Please enter valid numbers for Initiative, Health, and AC")
@@ -507,6 +508,31 @@ class CombatTrackerGUI:
         
         ttk.Button(button_frame, text="Create Copy", command=create_copy).pack(side=tk.RIGHT, padx=5)
         ttk.Button(button_frame, text="Cancel", command=dialog.destroy).pack(side=tk.RIGHT)
+        
+        # Position dialog relative to the copy button
+        dialog.update_idletasks()  # Ensure dialog is fully created
+        
+        # Get button position relative to root window
+        x = self.copy_button.winfo_rootx()
+        y = self.copy_button.winfo_rooty()
+        
+        # Center dialog over button
+        dialog_width = dialog.winfo_width()
+        dialog_height = dialog.winfo_height()
+        button_width = self.copy_button.winfo_width()
+        button_height = self.copy_button.winfo_height()
+        
+        dialog_x = x - (dialog_width - button_width) // 2
+        dialog_y = y - dialog_height - 10  # Position above button with small gap
+        
+        # Ensure dialog stays within screen bounds
+        screen_width = dialog.winfo_screenwidth()
+        screen_height = dialog.winfo_screenheight()
+        
+        dialog_x = max(0, min(dialog_x, screen_width - dialog_width))
+        dialog_y = max(0, min(dialog_y, screen_height - dialog_height))
+        
+        dialog.geometry(f"+{dialog_x}+{dialog_y}")
 
     def delete_character(self):
         selected = self.character_tree.selection()
