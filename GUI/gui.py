@@ -413,7 +413,7 @@ class CombatTrackerGUI:
             
             # Clear the form for the next character
             self.clear_character_details()
-            messagebox.showinfo("Success", "Character added successfully!")
+            #messagebox.showinfo("Success", "Character added successfully!")
             
         except ValueError as e:
             messagebox.showerror("Error", "Please enter valid numbers for Initiative, Health, and AC")
