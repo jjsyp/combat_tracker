@@ -12,3 +12,24 @@ class Character:
     def modify_health(self, amount: int) -> None:
         """Modify the character's health by the given amount (positive or negative)"""
         self.health = max(0, self.health + amount)
+
+    def to_dict(self) -> dict:
+        """Convert character to dictionary for saving"""
+        return {
+            'name': self.name,
+            'initiative': self.initiative,
+            'health': self.health,
+            'ac': self.ac,
+            'custom_fields': self.custom_fields
+        }
+    
+    @classmethod
+    def from_dict(cls, data: dict) -> 'Character':
+        """Create character from dictionary data"""
+        return cls(
+            name=data['name'],
+            initiative=data['initiative'],
+            health=data['health'],
+            ac=data['ac'],
+            custom_fields=data['custom_fields']
+        )
