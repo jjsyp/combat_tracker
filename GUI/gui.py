@@ -351,13 +351,56 @@ class CombatTrackerGUI:
         # Get the index of the selected item
         items = self.character_tree.get_children()
         idx = items.index(selected[0])
-        
         char = self.characters[idx]
-        new_char = copy.deepcopy(char)
-        new_char.name = f"{new_char.name} (Copy)"
-        self.characters.append(new_char)
-        self.update_character_list()
-    
+        
+        # Create a dialog for the new name
+        dialog = tk.Toplevel(self.root)
+        dialog.title("Copy Character")
+        dialog.transient(self.root)
+        dialog.grab_set()
+        
+        # Make dialog modal
+        dialog.focus_set()
+        
+        # Create and pack the frame
+        frame = ttk.Frame(dialog, padding="10")
+        frame.pack(fill=tk.BOTH, expand=True)
+        
+        # Add name label and entry
+        ttk.Label(frame, text="Enter name for the new character:").pack(anchor=tk.W)
+        name_var = tk.StringVar(value=char.name)
+        name_entry = ttk.Entry(frame, textvariable=name_var, width=40)
+        name_entry.pack(fill=tk.X, pady=(5, 10))
+        
+        # Select the text in the entry for easy editing
+        name_entry.select_range(0, tk.END)
+        name_entry.focus_set()
+        
+        def create_copy():
+            new_name = name_var.get().strip()
+            if not new_name:
+                messagebox.showerror("Error", "Please enter a name")
+                return
+            
+            new_char = copy.deepcopy(char)
+            new_char.name = new_name
+            self.characters.append(new_char)
+            self.update_character_list()
+            dialog.destroy()
+        
+        def on_enter(event):
+            create_copy()
+        
+        # Bind Enter key to create copy
+        name_entry.bind('<Return>', on_enter)
+        
+        # Add buttons
+        button_frame = ttk.Frame(frame)
+        button_frame.pack(fill=tk.X, pady=(0, 5))
+        
+        ttk.Button(button_frame, text="Create Copy", command=create_copy).pack(side=tk.RIGHT, padx=5)
+        ttk.Button(button_frame, text="Cancel", command=dialog.destroy).pack(side=tk.RIGHT)
+
     def delete_character(self):
         selected = self.character_tree.selection()
         if not selected:
