@@ -15,11 +15,14 @@ class CombatTrackerGUI:
         # Set application icon
         ico_path = os.path.join(os.path.dirname(__file__), 'app.ico')
         try:
-            # Load icon for both window decoration and taskbar
+            # Load icon for window decoration
             icon_image = Image.open(ico_path)
             icon_photo = ImageTk.PhotoImage(icon_image)
-            self.root.iconphoto(True, icon_photo)  # For some window managers
-            self.root.iconbitmap(ico_path)  # For Windows taskbar
+            # Handle icon setting based on platform
+            if os.name == 'nt':  # Windows
+                self.root.iconbitmap(ico_path)
+            else:  # Linux/Unix
+                self.root.iconphoto(True, icon_photo)
             # Keep a reference to prevent garbage collection
             self._icon_photo = icon_photo
         except Exception as e:
