@@ -5,11 +5,26 @@ import copy
 import json
 import os
 from character.character import Character
+from PIL import Image, ImageTk
 
 class CombatTrackerGUI:
     def __init__(self, root):
         self.root = root
         self.root.title("Combat Tracker")
+        
+        # Set application icon
+        ico_path = os.path.join(os.path.dirname(__file__), 'app.ico')
+        try:
+            # Load icon for both window decoration and taskbar
+            icon_image = Image.open(ico_path)
+            icon_photo = ImageTk.PhotoImage(icon_image)
+            self.root.iconphoto(True, icon_photo)  # For some window managers
+            self.root.iconbitmap(ico_path)  # For Windows taskbar
+            # Keep a reference to prevent garbage collection
+            self._icon_photo = icon_photo
+        except Exception as e:
+            print(f"Failed to load application icon: {e}")
+            
         self.characters: List[Character] = []
         self.custom_fields: List[str] = []
         self.popup_entry = None
