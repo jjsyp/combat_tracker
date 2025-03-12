@@ -281,6 +281,8 @@ class CombatTrackerGUI:
                 char.name = new_value
             elif column_name == 'initiative':
                 char.initiative = int(new_value)
+                # Select this character after sorting
+                self.last_edited_name = char.name
             elif column_name == 'health':
                 char.health = int(new_value)
             elif column_name == 'ac':
@@ -288,6 +290,16 @@ class CombatTrackerGUI:
                 
             # Update the display
             self.update_character_list()
+            
+            # If we just edited initiative, reselect the character
+            if column_name == 'initiative' and hasattr(self, 'last_edited_name'):
+                for item in self.character_tree.get_children():
+                    values = self.character_tree.item(item)['values']
+                    if values[0] == self.last_edited_name:  # Check name
+                        self.character_tree.selection_set(item)
+                        self.character_tree.see(item)  # Ensure visible
+                        break
+                delattr(self, 'last_edited_name')
             
         except ValueError:
             messagebox.showerror("Error", f"Invalid value for {column_name}")
@@ -463,8 +475,15 @@ class CombatTrackerGUI:
         for item in self.character_tree.get_children():
             self.character_tree.delete(item)
         
-        # Add characters sorted by initiative
-        for char in sorted(self.characters, key=lambda x: (-x.initiative, x.name)):
+        # Sort characters by initiative (highest to lowest) and then by name
+        sorted_chars = sorted(self.characters, 
+                            key=lambda x: (-x.initiative, x.name.lower()))
+        
+        # Update the internal list to maintain sort order
+        self.characters = sorted_chars
+        
+        # Add characters to the tree
+        for char in self.characters:
             # Format custom fields as a string
             custom_fields_str = ', '.join(f"{k}: {v}" for k, v in char.custom_fields.items())
             
