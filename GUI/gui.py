@@ -520,7 +520,35 @@ class CombatTrackerGUI:
             # Check for duplicate names
             existing_names = [c.name for c in self.characters]
             if new_name in existing_names:
-                messagebox.showerror("Error", f"A character named '{new_name}' already exists. Please choose a different name.")
+                error_dialog = tk.Toplevel(dialog)
+                error_dialog.title("Error")
+                error_dialog.transient(dialog)  # Set dialog as parent
+                error_dialog.grab_set()  # Make error dialog modal
+                
+                # Position error dialog relative to parent
+                error_dialog.geometry("+%d+%d" % (dialog.winfo_x() + 50,
+                                                 dialog.winfo_y() + 50))
+                
+                # Create error message
+                msg_frame = ttk.Frame(error_dialog, padding="20")
+                msg_frame.pack(fill=tk.BOTH, expand=True)
+                
+                ttk.Label(msg_frame, 
+                          text=f"A character named '{new_name}' already exists.\nPlease choose a different name.",
+                          wraplength=300).pack(pady=(0, 10))
+                
+                # Add OK button
+                ttk.Button(msg_frame, 
+                          text="OK", 
+                          command=error_dialog.destroy).pack()
+                
+                # Ensure error dialog is on top
+                error_dialog.lift()
+                error_dialog.focus_force()
+                
+                # Wait for error dialog to close
+                dialog.wait_window(error_dialog)
+                
                 name_entry.select_range(0, tk.END)  # Re-select text for easy editing
                 name_entry.focus_set()
                 return
