@@ -5,11 +5,29 @@ import copy
 import json
 import os
 from character.character import Character
+from PIL import Image, ImageTk
 
 class CombatTrackerGUI:
     def __init__(self, root):
         self.root = root
         self.root.title("Combat Tracker")
+        
+        # Set application icon
+        ico_path = os.path.join(os.path.dirname(__file__), 'app.ico')
+        try:
+            # Load icon for window decoration
+            icon_image = Image.open(ico_path)
+            icon_photo = ImageTk.PhotoImage(icon_image)
+            # Handle icon setting based on platform
+            if os.name == 'nt':  # Windows
+                self.root.iconbitmap(ico_path)
+            else:  # Linux/Unix
+                self.root.iconphoto(True, icon_photo)
+            # Keep a reference to prevent garbage collection
+            self._icon_photo = icon_photo
+        except Exception as e:
+            print(f"Failed to load application icon: {e}")
+            
         self.characters: List[Character] = []
         self.custom_fields: List[str] = []
         self.popup_entry = None
@@ -290,6 +308,15 @@ class CombatTrackerGUI:
         dialog = tk.Toplevel(self.root)
         dialog.title("Edit Custom Fields")
         dialog.transient(self.root)
+        
+        # Center the dialog on the screen
+        dialog.geometry("+%d+%d" % (self.root.winfo_x() + 50,
+                                   self.root.winfo_y() + 50))
+        
+        # Wait for the window to be drawn
+        dialog.update_idletasks()
+        
+        # Now we can safely set the grab
         dialog.grab_set()
         
         # Create a frame for the fields
