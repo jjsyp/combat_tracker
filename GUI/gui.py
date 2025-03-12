@@ -396,18 +396,21 @@ class CombatTrackerGUI:
         self.name_var = tk.StringVar()
         self.name_entry = ttk.Entry(self.character_detail_frame, textvariable=self.name_var)
         self.name_entry.pack(fill=tk.X, pady=(0, 10))
+        self.name_entry.bind('<Return>', lambda e: self.add_character())
         
         # Initiative Entry
         ttk.Label(self.character_detail_frame, text="Initiative:").pack(anchor=tk.W)
         self.initiative_var = tk.StringVar()
         self.initiative_entry = ttk.Entry(self.character_detail_frame, textvariable=self.initiative_var)
         self.initiative_entry.pack(fill=tk.X, pady=(0, 10))
+        self.initiative_entry.bind('<Return>', lambda e: self.add_character())
         
         # Initiative Bonus
         ttk.Label(self.character_detail_frame, text="Initiative Bonus:").pack(anchor=tk.W)
         self.bonus_var = tk.StringVar(value='0')
         self.bonus_entry = ttk.Entry(self.character_detail_frame, textvariable=self.bonus_var)
         self.bonus_entry.pack(fill=tk.X, pady=(0, 10))
+        self.bonus_entry.bind('<Return>', lambda e: self.add_character())
         
         # Health Frame
         health_frame = ttk.Frame(self.character_detail_frame)
@@ -417,12 +420,14 @@ class CombatTrackerGUI:
         self.health_var = tk.StringVar()
         self.health_entry = ttk.Entry(health_frame, textvariable=self.health_var, width=8)
         self.health_entry.pack(side=tk.LEFT, padx=5)
+        self.health_entry.bind('<Return>', lambda e: self.add_character())
         
         # AC Entry
         ttk.Label(self.character_detail_frame, text="Armor Class:").pack(anchor=tk.W)
         self.ac_var = tk.StringVar()
         self.ac_entry = ttk.Entry(self.character_detail_frame, textvariable=self.ac_var)
         self.ac_entry.pack(fill=tk.X, pady=(0, 10))
+        self.ac_entry.bind('<Return>', lambda e: self.add_character())
         
         # Custom Fields Frame
         custom_frame = ttk.LabelFrame(self.character_detail_frame, text="Custom Fields")
