@@ -48,6 +48,9 @@ class CombatTrackerGUI:
         
         # Try to load last session
         self.load_last_session()
+        
+        # Bind window close event
+        self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
 
     def create_menu_bar(self):
         """Create the menu bar with File options"""
@@ -650,6 +653,24 @@ class CombatTrackerGUI:
                   command=lambda: frame.destroy()).pack(side=tk.RIGHT, padx=2)
         
         return frame, name_entry, value_entry
+
+    def on_closing(self):
+        """Handle window closing event - auto save if there are characters"""
+        try:
+            if self.characters:  # Only save if there are characters
+                # Save character data
+                save_path = os.path.join('saves', 'last_session.json')
+                self.save_to_file(save_path)
+                
+                # Update combat state
+                state_path = os.path.join('saves', 'combat_state.json')
+                os.makedirs(os.path.dirname(state_path), exist_ok=True)
+                with open(state_path, 'w') as f:
+                    json.dump({'in_combat': True}, f)
+        except Exception as e:
+            print(f"Failed to auto-save session: {str(e)}")
+        
+        self.root.destroy()
 
 if __name__ == "__main__":
     root = tk.Tk()
