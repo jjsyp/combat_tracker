@@ -308,6 +308,15 @@ class CombatTrackerGUI:
         dialog = tk.Toplevel(self.root)
         dialog.title("Edit Custom Fields")
         dialog.transient(self.root)
+        
+        # Center the dialog on the screen
+        dialog.geometry("+%d+%d" % (self.root.winfo_x() + 50,
+                                   self.root.winfo_y() + 50))
+        
+        # Wait for the window to be drawn
+        dialog.update_idletasks()
+        
+        # Now we can safely set the grab
         dialog.grab_set()
         
         # Create a frame for the fields
