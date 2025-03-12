@@ -172,12 +172,13 @@ class CombatTrackerGUI:
         self.character_tree.configure(yscrollcommand=scrollbar.set)
         
         # Configure columns
-        self.character_tree['columns'] = ('name', 'initiative', 'health', 'ac', 'custom_fields')
+        self.character_tree['columns'] = ('name', 'initiative', 'bonus', 'health', 'ac', 'custom_fields')
         
         # Format columns
         self.character_tree.column('#0', width=0, stretch=tk.NO)  # Hidden ID column
         self.character_tree.column('name', anchor=tk.W, width=120)
         self.character_tree.column('initiative', anchor=tk.CENTER, width=60)
+        self.character_tree.column('bonus', anchor=tk.CENTER, width=50)
         self.character_tree.column('health', anchor=tk.CENTER, width=60)
         self.character_tree.column('ac', anchor=tk.CENTER, width=60)
         self.character_tree.column('custom_fields', anchor=tk.W, width=200)
@@ -186,6 +187,7 @@ class CombatTrackerGUI:
         self.character_tree.heading('#0', text='', anchor=tk.W)
         self.character_tree.heading('name', text='Name', anchor=tk.W)
         self.character_tree.heading('initiative', text='Initiative', anchor=tk.CENTER)
+        self.character_tree.heading('bonus', text='Bonus', anchor=tk.CENTER)
         self.character_tree.heading('health', text='Health', anchor=tk.CENTER)
         self.character_tree.heading('ac', text='AC', anchor=tk.CENTER)
         self.character_tree.heading('custom_fields', text='Custom Fields', anchor=tk.W)
@@ -281,6 +283,10 @@ class CombatTrackerGUI:
                 char.name = new_value
             elif column_name == 'initiative':
                 char.initiative = int(new_value)
+                # Select this character after sorting
+                self.last_edited_name = char.name
+            elif column_name == 'bonus':
+                char.initiative_bonus = int(new_value)
                 # Select this character after sorting
                 self.last_edited_name = char.name
             elif column_name == 'health':
@@ -397,6 +403,12 @@ class CombatTrackerGUI:
         self.initiative_entry = ttk.Entry(self.character_detail_frame, textvariable=self.initiative_var)
         self.initiative_entry.pack(fill=tk.X, pady=(0, 10))
         
+        # Initiative Bonus
+        ttk.Label(self.character_detail_frame, text="Initiative Bonus:").pack(anchor=tk.W)
+        self.bonus_var = tk.StringVar(value='0')
+        self.bonus_entry = ttk.Entry(self.character_detail_frame, textvariable=self.bonus_var)
+        self.bonus_entry.pack(fill=tk.X, pady=(0, 10))
+        
         # Health Frame
         health_frame = ttk.Frame(self.character_detail_frame)
         health_frame.pack(fill=tk.X, pady=(0, 10))
@@ -438,6 +450,7 @@ class CombatTrackerGUI:
             char = Character(
                 name=name,
                 initiative=int(self.initiative_var.get() or 0),
+                initiative_bonus=int(self.bonus_var.get() or 0),
                 health=int(self.health_var.get() or 0),
                 ac=int(self.ac_var.get() or 0)
             )
@@ -464,6 +477,7 @@ class CombatTrackerGUI:
     def clear_character_details(self):
         self.name_var.set("")
         self.initiative_var.set("")
+        self.bonus_var.set("0")
         self.health_var.set("")
         self.ac_var.set("")
         
@@ -475,9 +489,9 @@ class CombatTrackerGUI:
         for item in self.character_tree.get_children():
             self.character_tree.delete(item)
         
-        # Sort characters by initiative (highest to lowest) and then by name
+        # Sort characters by initiative (highest to lowest), then bonus, then name
         sorted_chars = sorted(self.characters, 
-                            key=lambda x: (-x.initiative, x.name.lower()))
+                            key=lambda x: (-x.initiative, -x.initiative_bonus, x.name.lower()))
         
         # Update the internal list to maintain sort order
         self.characters = sorted_chars
@@ -493,6 +507,7 @@ class CombatTrackerGUI:
                 values=(
                     char.name,
                     char.initiative,
+                    char.initiative_bonus,
                     char.health,
                     char.ac,
                     custom_fields_str

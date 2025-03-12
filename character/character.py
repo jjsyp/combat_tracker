@@ -5,6 +5,7 @@ from typing import Dict
 class Character:
     name: str
     initiative: int = 0
+    initiative_bonus: int = field(default=0)  # Bonus for initiative ties
     health: int = 0
     ac: int = 0
     custom_fields: Dict[str, str] = field(default_factory=dict)
@@ -18,6 +19,7 @@ class Character:
         return {
             'name': self.name,
             'initiative': self.initiative,
+            'initiative_bonus': self.initiative_bonus,
             'health': self.health,
             'ac': self.ac,
             'custom_fields': self.custom_fields
@@ -29,6 +31,7 @@ class Character:
         return cls(
             name=data['name'],
             initiative=data['initiative'],
+            initiative_bonus=data.get('initiative_bonus', 0),  # Handle older saves
             health=data['health'],
             ac=data['ac'],
             custom_fields=data['custom_fields']
