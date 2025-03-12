@@ -490,6 +490,14 @@ class CombatTrackerGUI:
                 messagebox.showerror("Error", "Please enter a name")
                 return
             
+            # Check for duplicate names
+            existing_names = [c.name for c in self.characters]
+            if new_name in existing_names:
+                messagebox.showerror("Error", f"A character named '{new_name}' already exists. Please choose a different name.")
+                name_entry.select_range(0, tk.END)  # Re-select text for easy editing
+                name_entry.focus_set()
+                return
+            
             new_char = copy.deepcopy(char)
             new_char.name = new_name
             self.characters.append(new_char)
