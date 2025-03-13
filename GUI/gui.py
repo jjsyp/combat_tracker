@@ -46,6 +46,10 @@ class CombatTrackerGUI:
         self.setup_character_list()
         self.setup_character_details()
         
+        # Initialize session manager
+        from GUI.components.session_manager import SessionManager
+        self.session_manager = SessionManager(self)
+        
         # Try to load last session
         self.load_last_session()
         
@@ -58,96 +62,28 @@ class CombatTrackerGUI:
         self.menu_bar = MenuBar(self.root, self)
         
     def save_session(self):
-        """Save the current session to the default file"""
-        try:
-            # Save character data
-            save_path = os.path.join('saves', 'last_session.json')
-            self.save_to_file(save_path)
-            
-            # Update combat state
-            state_path = os.path.join('saves', 'combat_state.json')
-            os.makedirs(os.path.dirname(state_path), exist_ok=True)
-            with open(state_path, 'w') as f:
-                json.dump({'in_combat': True}, f)
-                
-            messagebox.showinfo("Success", "Session saved successfully!")
-        except Exception as e:
-            messagebox.showerror("Error", f"Failed to save session: {str(e)}")
+        """Proxy method to maintain backward compatibility"""
+        self.session_manager.save_session()
     
     def save_session_as(self):
-        """Save the current session to a chosen file"""
-        try:
-            file_path = filedialog.asksaveasfilename(
-                defaultextension=".json",
-                filetypes=[("JSON files", "*.json"), ("All files", "*.*")],
-                initialdir="saves"
-            )
-            if file_path:
-                self.save_to_file(file_path)
-                messagebox.showinfo("Success", "Session saved successfully!")
-        except Exception as e:
-            messagebox.showerror("Error", f"Failed to save session: {str(e)}")
+        """Proxy method to maintain backward compatibility"""
+        self.session_manager.save_session_as()
     
     def save_to_file(self, file_path):
-        """Save characters to a JSON file"""
-        # Create saves directory if it doesn't exist
-        os.makedirs(os.path.dirname(file_path), exist_ok=True)
-        
-        # Convert characters to dictionaries
-        characters_data = [char.to_dict() for char in self.characters]
-        
-        # Save to file
-        with open(file_path, 'w') as f:
-            json.dump(characters_data, f, indent=2)
+        """Proxy method to maintain backward compatibility"""
+        self.session_manager.save_to_file(file_path)
     
     def load_session(self):
-        """Load a session from a chosen file"""
-        try:
-            file_path = filedialog.askopenfilename(
-                defaultextension=".json",
-                filetypes=[("JSON files", "*.json"), ("All files", "*.*")],
-                initialdir="saves"
-            )
-            if file_path:
-                self.load_from_file(file_path)
-                messagebox.showinfo("Success", "Session loaded successfully!")
-        except Exception as e:
-            messagebox.showerror("Error", f"Failed to load session: {str(e)}")
+        """Proxy method to maintain backward compatibility"""
+        self.session_manager.load_session()
     
     def load_last_session(self):
-        """Try to load the last session if it exists and we're in combat"""
-        state_path = os.path.join('saves', 'combat_state.json')
-        last_session_path = os.path.join('saves', 'last_session.json')
-        
-        try:
-            # Check if we should load the last session
-            if os.path.exists(state_path):
-                with open(state_path, 'r') as f:
-                    state = json.load(f)
-                if not state.get('in_combat', True):
-                    return
-            
-            # Load last session if it exists
-            if os.path.exists(last_session_path):
-                self.load_from_file(last_session_path)
-        except Exception:
-            # Silently fail if last session can't be loaded
-            pass
+        """Proxy method to maintain backward compatibility"""
+        self.session_manager.load_last_session()
     
     def load_from_file(self, file_path):
-        """Load characters from a JSON file"""
-        with open(file_path, 'r') as f:
-            characters_data = json.load(f)
-        
-        # Clear current characters
-        self.characters.clear()
-        
-        # Create new characters from data
-        for char_data in characters_data:
-            self.characters.append(Character.from_dict(char_data))
-        
-        # Update the display
-        self.update_character_list()
+        """Proxy method to maintain backward compatibility"""
+        self.session_manager.load_from_file(file_path)
         
     def setup_character_list(self):
         """Initialize the character list view"""
@@ -388,46 +324,15 @@ class CombatTrackerGUI:
     def end_combat(self):
         """End the current combat, clearing all characters and preventing auto-load"""
         if messagebox.askyesno("End Combat", "Are you sure you want to end combat?\nThis will remove all characters and start fresh next time."):
-            # Clear all characters
-            self.characters.clear()
-            self.update_character_list()
-            
-            # Save empty state file to prevent auto-load next time
-            try:
-                state_path = os.path.join('saves', 'combat_state.json')
-                os.makedirs(os.path.dirname(state_path), exist_ok=True)
-                with open(state_path, 'w') as f:
-                    json.dump({'in_combat': False}, f)
-                
-                # Remove last session file if it exists
-                last_session_path = os.path.join('saves', 'last_session.json')
-                if os.path.exists(last_session_path):
-                    os.remove(last_session_path)
-                    
-                messagebox.showinfo("Success", "Combat ended. Starting fresh next time!")
-            except Exception as e:
-                messagebox.showerror("Error", f"Failed to save combat state: {str(e)}")
+            self.session_manager.end_combat()
 
     def add_custom_field(self, field_name=None, value=None):
         """Proxy method to maintain backward compatibility"""
         return self.character_details.add_custom_field(field_name, value)
 
     def on_closing(self):
-        """Handle window closing event - auto save if there are characters"""
-        try:
-            if self.characters:  # Only save if there are characters
-                # Save character data
-                save_path = os.path.join('saves', 'last_session.json')
-                self.save_to_file(save_path)
-                
-                # Update combat state
-                state_path = os.path.join('saves', 'combat_state.json')
-                os.makedirs(os.path.dirname(state_path), exist_ok=True)
-                with open(state_path, 'w') as f:
-                    json.dump({'in_combat': True}, f)
-        except Exception as e:
-            print(f"Failed to auto-save session: {str(e)}")
-        
+        """Handle window closing event"""
+        self.session_manager.auto_save_on_close()
         self.root.destroy()
 
 if __name__ == "__main__":
