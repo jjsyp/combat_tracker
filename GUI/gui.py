@@ -101,70 +101,9 @@ class CombatTrackerGUI:
         char_index = items.index(item)
         char = self.characters[char_index]
         
-        # Create a dialog
-        dialog = tk.Toplevel(self.root)
-        dialog.title("Edit Custom Fields")
-        dialog.transient(self.root)
-        
-        # Center the dialog on the screen
-        dialog.geometry("+%d+%d" % (self.root.winfo_x() + 50,
-                                   self.root.winfo_y() + 50))
-        
-        # Wait for the window to be drawn
-        dialog.update_idletasks()
-        
-        # Now we can safely set the grab
-        dialog.grab_set()
-        
-        # Create a frame for the fields
-        fields_frame = ttk.Frame(dialog)
-        fields_frame.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
-        
-        # Dictionary to store entry widgets
-        entries = {}
-        
-        # Add existing custom fields
-        row = 0
-        for key, value in char.custom_fields.items():
-            ttk.Label(fields_frame, text="Name:").grid(row=row, column=0, padx=2)
-            name_entry = ttk.Entry(fields_frame)
-            name_entry.insert(0, key)
-            name_entry.grid(row=row, column=1, padx=2)
-            
-            ttk.Label(fields_frame, text="Value:").grid(row=row, column=2, padx=2)
-            value_entry = ttk.Entry(fields_frame)
-            value_entry.insert(0, value)
-            value_entry.grid(row=row, column=3, padx=2)
-            
-            entries[row] = (name_entry, value_entry)
-            row += 1
-        
-        # Add a blank field for new entries
-        ttk.Label(fields_frame, text="Name:").grid(row=row, column=0, padx=2)
-        new_name = ttk.Entry(fields_frame)
-        new_name.grid(row=row, column=1, padx=2)
-        
-        ttk.Label(fields_frame, text="Value:").grid(row=row, column=2, padx=2)
-        new_value = ttk.Entry(fields_frame)
-        new_value.grid(row=row, column=3, padx=2)
-        
-        entries[row] = (new_name, new_value)
-        
-        def save_fields():
-            # Clear existing custom fields
-            char.custom_fields.clear()
-            
-            # Save all non-empty fields
-            for name_entry, value_entry in entries.values():
-                name = name_entry.get().strip()
-                if name:  # Only save if name is not empty
-                    char.custom_fields[name] = value_entry.get()
-            
-            self.update_character_list()
-            dialog.destroy()
-        
-        # Add Save button
-        ttk.Button(dialog, text="Save", command=save_fields).pack(pady=5)
+        # Create and show the dialog
+        from GUI.components.custom_fields_dialog import CustomFieldsDialog
+        CustomFieldsDialog(self.root, char, self.character_list)
 
     def setup_character_details(self):
         """Initialize the character details panel"""
