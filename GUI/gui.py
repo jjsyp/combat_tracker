@@ -54,17 +54,8 @@ class CombatTrackerGUI:
 
     def create_menu_bar(self):
         """Create the menu bar with File options"""
-        menubar = tk.Menu(self.root)
-        self.root.config(menu=menubar)
-        
-        # File menu
-        file_menu = tk.Menu(menubar, tearoff=0)
-        menubar.add_cascade(label="File", menu=file_menu)
-        file_menu.add_command(label="Save", command=self.save_session)
-        file_menu.add_command(label="Save As...", command=self.save_session_as)
-        file_menu.add_command(label="Load...", command=self.load_session)
-        file_menu.add_separator()
-        file_menu.add_command(label="Exit", command=self.root.quit)
+        from GUI.components.menu_bar import MenuBar
+        self.menu_bar = MenuBar(self.root, self)
         
     def save_session(self):
         """Save the current session to the default file"""
