@@ -126,18 +126,25 @@ class CharacterList:
         # Give focus to the entry
         self.popup_entry.focus_set()
         
+        # Store current edit info for focus out
+        self.current_edit = {'item': item, 'column_name': column_name}
+        
         # Bind events
-        self.popup_entry.bind('<Return>', lambda e: self.finish_edit(item, column_name))
+        self.popup_entry.bind('<Return>', lambda e: self.finish_edit())
         self.popup_entry.bind('<Escape>', lambda e: self.cancel_edit())
-        self.popup_entry.bind('<FocusOut>', lambda e: self.cancel_edit())
+        self.popup_entry.bind('<FocusOut>', lambda e: self.finish_edit())
 
-    def finish_edit(self, item, column_name):
+    def finish_edit(self):
         """Save the edited value"""
-        if not self.popup_entry:
+        if not self.popup_entry or not hasattr(self, 'current_edit'):
             return
             
+        # Get the edit info
+        item = self.current_edit['item']
+        column_name = self.current_edit['column_name']
+        
         # Get the new value
-        new_value = self.popup_entry.get()
+        new_value = self.popup_entry.get().strip()
         
         # Get the character index
         items = self.character_tree.get_children()
@@ -176,8 +183,13 @@ class CharacterList:
             
         except ValueError:
             messagebox.showerror("Error", f"Invalid value for {column_name}")
-        
-        self.cancel_edit()
+        finally:
+            # Clean up
+            if self.popup_entry:
+                self.popup_entry.destroy()
+                self.popup_entry = None
+            if hasattr(self, 'current_edit'):
+                del self.current_edit
 
     def cancel_edit(self):
         """Cancel the current edit"""
