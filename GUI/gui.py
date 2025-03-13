@@ -10,37 +10,20 @@ from PIL import Image, ImageTk
 class CombatTrackerGUI:
     def __init__(self, root):
         self.root = root
-        self.root.title("Combat Tracker")
-        
-        # Set application icon
-        ico_path = os.path.join(os.path.dirname(__file__), 'app.ico')
-        try:
-            # Load icon for window decoration
-            icon_image = Image.open(ico_path)
-            icon_photo = ImageTk.PhotoImage(icon_image)
-            # Handle icon setting based on platform
-            if os.name == 'nt':  # Windows
-                self.root.iconbitmap(ico_path)
-            else:  # Linux/Unix
-                self.root.iconphoto(True, icon_photo)
-            # Keep a reference to prevent garbage collection
-            self._icon_photo = icon_photo
-        except Exception as e:
-            print(f"Failed to load application icon: {e}")
-            
         self.characters: List[Character] = []
         self.custom_fields: List[str] = []
         self.popup_entry = None
         
+        # Initialize app configuration
+        from GUI.components.app_config import AppConfig
+        self.app_config = AppConfig(root)
+        
         # Create menu bar
         self.create_menu_bar()
         
-        # Create main frames
-        self.character_list_frame = ttk.Frame(root)
-        self.character_list_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=5, pady=5)
-        
-        self.character_detail_frame = ttk.Frame(root)
-        self.character_detail_frame.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True, padx=5, pady=5)
+        # Store frame references
+        self.character_list_frame = self.app_config.list_frame
+        self.character_detail_frame = self.app_config.detail_frame
         
         # Initialize UI
         self.setup_character_list()
@@ -140,112 +123,13 @@ class CombatTrackerGUI:
         idx = items.index(selected[0])
         char = self.characters[idx]
         
-        # Create a dialog for the new name
-        dialog = tk.Toplevel(self.root)
-        dialog.title("Copy Character")
-        dialog.transient(self.root)
-        dialog.grab_set()
-        
-        # Make dialog modal
-        dialog.focus_set()
-        
-        # Create and pack the frame
-        frame = ttk.Frame(dialog, padding="10")
-        frame.pack(fill=tk.BOTH, expand=True)
-        
-        # Add name label and entry
-        ttk.Label(frame, text="Enter name for the new character:").pack(anchor=tk.W)
-        name_var = tk.StringVar(value=char.name)
-        name_entry = ttk.Entry(frame, textvariable=name_var, width=40)
-        name_entry.pack(fill=tk.X, pady=(5, 10))
-        
-        # Select the text in the entry for easy editing
-        name_entry.select_range(0, tk.END)
-        name_entry.focus_set()
-        
-        def create_copy():
-            new_name = name_var.get().strip()
-            if not new_name:
-                messagebox.showerror("Error", "Please enter a name")
-                return
-            
-            # Check for duplicate names
-            existing_names = [c.name for c in self.characters]
-            if new_name in existing_names:
-                error_dialog = tk.Toplevel(dialog)
-                error_dialog.title("Error")
-                error_dialog.transient(dialog)  # Set dialog as parent
-                error_dialog.grab_set()  # Make error dialog modal
-                
-                # Position error dialog relative to parent
-                error_dialog.geometry("+%d+%d" % (dialog.winfo_x() + 50,
-                                                 dialog.winfo_y() + 50))
-                
-                # Create error message
-                msg_frame = ttk.Frame(error_dialog, padding="20")
-                msg_frame.pack(fill=tk.BOTH, expand=True)
-                
-                ttk.Label(msg_frame, 
-                          text=f"A character named '{new_name}' already exists.\nPlease choose a different name.",
-                          wraplength=300).pack(pady=(0, 10))
-                
-                # Add OK button
-                ttk.Button(msg_frame, 
-                          text="OK", 
-                          command=error_dialog.destroy).pack()
-                
-                # Ensure error dialog is on top
-                error_dialog.lift()
-                error_dialog.focus_force()
-                
-                # Wait for error dialog to close
-                dialog.wait_window(error_dialog)
-                
-                name_entry.select_range(0, tk.END)  # Re-select text for easy editing
-                name_entry.focus_set()
-                return
-            
-            new_char = copy.deepcopy(char)
-            new_char.name = new_name
+        def on_copy_complete(new_char):
             self.characters.append(new_char)
             self.update_character_list()
-            dialog.destroy()
         
-        def on_enter(event):
-            create_copy()
-        
-        # Bind Enter key to create copy
-        name_entry.bind('<Return>', on_enter)
-        
-        # Add buttons
-        button_frame = ttk.Frame(frame)
-        button_frame.pack(fill=tk.X, pady=(0, 5))
-        
-        ttk.Button(button_frame, text="Create Copy", command=create_copy).pack(side=tk.RIGHT, padx=5)
-        ttk.Button(button_frame, text="Cancel", command=dialog.destroy).pack(side=tk.RIGHT)
-        
-        # Position dialog relative to the copy button
-        dialog.update_idletasks()  # Ensure dialog is fully created
-        
-        # Get button position and size
-        btn_pos = self.character_list.get_copy_button_position()
-        
-        # Get dialog size
-        dialog_width = dialog.winfo_width()
-        dialog_height = dialog.winfo_height()
-        
-        # Center dialog over button
-        dialog_x = btn_pos['x'] - (dialog_width - btn_pos['width']) // 2
-        dialog_y = btn_pos['y'] - dialog_height - 10  # Position above button with small gap
-        
-        # Get screen dimensions and ensure dialog stays within bounds
-        screen_width = dialog.winfo_screenwidth()
-        screen_height = dialog.winfo_screenheight()
-        
-        dialog_x = max(0, min(dialog_x, screen_width - dialog_width))
-        dialog_y = max(0, min(dialog_y, screen_height - dialog_height))
-        
-        dialog.geometry(f"+{dialog_x}+{dialog_y}")
+        # Create and show the dialog
+        from GUI.components.copy_character_dialog import CopyCharacterDialog
+        CopyCharacterDialog(self.root, char, self.characters, on_copy_complete)
 
     def delete_character(self):
         selected = self.character_list.character_tree.selection()

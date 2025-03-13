@@ -1,5 +1,6 @@
 from dataclasses import dataclass, field
 from typing import Dict
+import copy
 
 @dataclass
 class Character:
@@ -9,6 +10,10 @@ class Character:
     health: int = 0
     ac: int = 0
     custom_fields: Dict[str, str] = field(default_factory=dict)
+    
+    def copy(self) -> 'Character':
+        """Create a deep copy of this character"""
+        return copy.deepcopy(self)
     
     def modify_health(self, amount: int) -> None:
         """Modify the character's health by the given amount (positive or negative)"""
