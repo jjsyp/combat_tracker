@@ -120,6 +120,9 @@ class CharacterDetails:
         
         for widget in self.custom_fields_frame.winfo_children():
             widget.destroy()
+            
+        # Reset custom fields frame size
+        self.custom_fields_frame.configure(height=20)
 
     def add_custom_field(self, field_name=None, value=None):
         """Add a new custom field to the form"""
