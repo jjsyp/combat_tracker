@@ -123,14 +123,14 @@ class CharacterDetails:
         
         # Name entry
         ttk.Label(frame, text="Name:").pack(side=tk.LEFT, padx=2)
-        name_entry = ttk.Entry(frame)
+        name_entry = ttk.Entry(frame, width=10)
         if field_name:
             name_entry.insert(0, field_name)
         name_entry.pack(side=tk.LEFT, padx=2)
         
         # Value entry
         ttk.Label(frame, text="Value:").pack(side=tk.LEFT, padx=2)
-        value_entry = ttk.Entry(frame)
+        value_entry = ttk.Entry(frame, width=4)
         if value:
             value_entry.insert(0, value)
         value_entry.pack(side=tk.LEFT, padx=2)
