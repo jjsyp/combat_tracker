@@ -135,6 +135,7 @@ class CharacterDetails:
         if field_name:
             name_entry.insert(0, field_name)
         name_entry.pack(side=tk.LEFT, padx=2)
+        name_entry.bind('<Return>', lambda e: self.add_character())
         
         # Value entry
         ttk.Label(frame, text="Value:").pack(side=tk.LEFT, padx=2)
@@ -142,6 +143,7 @@ class CharacterDetails:
         if value:
             value_entry.insert(0, value)
         value_entry.pack(side=tk.LEFT, padx=2)
+        value_entry.bind('<Return>', lambda e: self.add_character())
         
         # Delete button
         ttk.Button(frame, text="X", width=2,
