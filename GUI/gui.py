@@ -86,7 +86,7 @@ class CombatTrackerGUI:
         
         # Create and show the dialog
         from GUI.components.custom_fields_dialog import CustomFieldsDialog
-        CustomFieldsDialog(self.root, char, self.character_list)
+        CustomFieldsDialog(self.root, char, self.character_list, self)
 
     def setup_character_details(self):
         """Initialize the character details panel"""

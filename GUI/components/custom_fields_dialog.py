@@ -2,7 +2,7 @@ import tkinter as tk
 from tkinter import ttk, messagebox
 
 class CustomFieldsDialog:
-    def __init__(self, parent, character, character_list):
+    def __init__(self, parent, character, character_list, main_gui):
         """
         Initialize the custom fields dialog
         
@@ -10,10 +10,12 @@ class CustomFieldsDialog:
             parent: Parent window
             character: Character whose custom fields to edit
             character_list: Reference to the character list component for updates
+            main_gui: Reference to the main GUI for character list access
         """
         self.parent = parent
         self.character = character
         self.character_list = character_list
+        self.main_gui = main_gui
         self.entries = {}
         
         # Create dialog
@@ -118,8 +120,8 @@ class CustomFieldsDialog:
             if field_name:  # Only add if field name is not empty
                 self.character.custom_fields[field_name] = value_entry.get()
         
-        # Update the display
-        self.character_list.update_character_list(None)  # None means use existing characters
+        # Update the display with main GUI's character list
+        self.character_list.update_character_list(self.main_gui.characters)
         
         # Close the dialog
         self.dialog.destroy()
