@@ -20,7 +20,7 @@ class AppConfig:
         self.root.title("Combat Tracker")
         
         # Set minimum window size
-        self.root.minsize(800, 300)
+        self.root.minsize(800, 400)
         
         # Create main container frame with grid
         self.main_container = ttk.Frame(self.root)
