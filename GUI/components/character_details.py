@@ -57,14 +57,19 @@ class CharacterDetails:
         
         # Custom Fields Frame
         custom_frame = ttk.LabelFrame(self.parent_frame, text="Custom Fields")
-        custom_frame.pack(fill=tk.BOTH, expand=True, pady=5)
+        custom_frame.pack(fill=tk.X, pady=5)  # Changed to fill=tk.X so it doesn't try to expand vertically
         
+        # Frame to hold custom fields that will grow vertically
         self.custom_fields_frame = ttk.Frame(custom_frame)
-        self.custom_fields_frame.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
+        self.custom_fields_frame.pack(fill=tk.X, padx=5, pady=5)  # Changed to fill=tk.X to match parent
+        
+        # Button Frame to keep buttons together
+        button_frame = ttk.Frame(custom_frame)
+        button_frame.pack(fill=tk.X, pady=5)
         
         # Add Custom Field Button
-        ttk.Button(custom_frame, text="Add Custom Field", 
-                  command=self.add_custom_field).pack(pady=5)
+        ttk.Button(button_frame, text="Add Custom Field", 
+                  command=self.add_custom_field).pack()
         
         # Add Character Button
         ttk.Button(self.parent_frame, text="Add Character", 

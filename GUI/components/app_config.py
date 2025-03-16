@@ -41,10 +41,22 @@ class AppConfig:
         right_wrapper.grid_columnconfigure(0, weight=1)
         right_wrapper.grid_rowconfigure(0, weight=1)
         
-        # Create the actual right frame with fixed width
+        # Create the actual right frame with fixed width but variable height
         self.character_detail_frame = ttk.Frame(right_wrapper, width=300)
         self.character_detail_frame.grid(row=0, column=0, sticky='nsew')
-        self.character_detail_frame.grid_propagate(False)  # Keep fixed width
+        
+        # Allow vertical growth while keeping fixed width
+        self.character_detail_frame.grid_columnconfigure(0, weight=1)
+        self.character_detail_frame.grid_rowconfigure(0, weight=1)
+        
+        # Create inner frame to maintain fixed width
+        inner_frame = ttk.Frame(self.character_detail_frame)
+        inner_frame.grid(row=0, column=0, sticky='new')
+        inner_frame.grid_propagate(False)  # Keep fixed width
+        inner_frame.configure(width=300)
+        
+        # Store inner frame reference
+        self._detail_inner_frame = inner_frame
         
     def setup_icon(self):
         """Set up the application icon based on platform"""
@@ -73,4 +85,4 @@ class AppConfig:
     @property
     def detail_frame(self):
         """Get the character detail frame"""
-        return self.character_detail_frame
+        return self._detail_inner_frame
