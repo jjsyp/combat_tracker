@@ -43,11 +43,11 @@ class CharacterList:
         
         # Format columns with minimum widths and stretch enabled
         self.character_tree.column('#0', width=0, stretch=tk.NO)  # Hidden ID column
-        self.character_tree.column('name', anchor=tk.W, width=120, minwidth=100, stretch=tk.YES)
-        self.character_tree.column('initiative', anchor=tk.CENTER, width=60, minwidth=60, stretch=tk.YES)
-        self.character_tree.column('bonus', anchor=tk.CENTER, width=50, minwidth=50, stretch=tk.YES)
-        self.character_tree.column('health', anchor=tk.CENTER, width=60, minwidth=60, stretch=tk.YES)
-        self.character_tree.column('ac', anchor=tk.CENTER, width=60, minwidth=50, stretch=tk.YES)
+        self.character_tree.column('name', anchor=tk.W, width=120, minwidth=100, stretch=tk.NO)
+        self.character_tree.column('initiative', anchor=tk.CENTER, width=75, minwidth=75, stretch=tk.NO)
+        self.character_tree.column('bonus', anchor=tk.CENTER, width=50, minwidth=50, stretch=tk.NO)
+        self.character_tree.column('health', anchor=tk.CENTER, width=55, minwidth=55, stretch=tk.NO)
+        self.character_tree.column('ac', anchor=tk.CENTER, width=40, minwidth=40, stretch=tk.NO)
         self.character_tree.column('custom_fields', anchor=tk.W, width=200, minwidth=150, stretch=tk.YES)
         
         # Create headings
