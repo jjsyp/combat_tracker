@@ -60,7 +60,7 @@ class CharacterDetails:
         custom_frame.pack(fill=tk.X, pady=5)  # Changed to fill=tk.X so it doesn't try to expand vertically
         
         # Frame to hold custom fields that will grow vertically
-        self.custom_fields_frame = ttk.Frame(custom_frame)
+        self.custom_fields_frame = ttk.Frame(custom_frame, height=20)
         self.custom_fields_frame.pack(fill=tk.X, padx=5, pady=5)  # Changed to fill=tk.X to match parent
         
         # Button Frame to keep buttons together
