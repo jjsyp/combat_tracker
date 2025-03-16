@@ -23,9 +23,17 @@ class CustomFieldsDialog:
         self.dialog.title("Edit Custom Fields")
         self.dialog.transient(parent)
         
-        # Create a frame for the fields
+        # Set minimum size and make dialog resizable
+        self.dialog.minsize(400, 200)
+        self.dialog.resizable(True, True)
+        
+        # Create a frame for the fields with grid weights
         self.fields_frame = ttk.Frame(self.dialog)
         self.fields_frame.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
+        
+        # Configure grid weights for dynamic resizing
+        self.fields_frame.grid_columnconfigure(1, weight=1)  # Name field
+        self.fields_frame.grid_columnconfigure(3, weight=2)  # Value field
         
         # Add existing custom fields
         self.setup_fields()
@@ -46,15 +54,15 @@ class CustomFieldsDialog:
         """Set up the custom fields display"""
         row = 0
         for key, value in self.character.custom_fields.items():
-            ttk.Label(self.fields_frame, text="Name:").grid(row=row, column=0, padx=2)
+            ttk.Label(self.fields_frame, text="Name:").grid(row=row, column=0, padx=2, sticky=tk.E)
             name_entry = ttk.Entry(self.fields_frame)
             name_entry.insert(0, key)
-            name_entry.grid(row=row, column=1, padx=2)
+            name_entry.grid(row=row, column=1, padx=2, sticky=tk.EW)
             
-            ttk.Label(self.fields_frame, text="Value:").grid(row=row, column=2, padx=2)
+            ttk.Label(self.fields_frame, text="Value:").grid(row=row, column=2, padx=2, sticky=tk.E)
             value_entry = ttk.Entry(self.fields_frame)
             value_entry.insert(0, value)
-            value_entry.grid(row=row, column=3, padx=2)
+            value_entry.grid(row=row, column=3, padx=2, sticky=tk.EW)
             
             # Store entries for later access
             self.entries[row] = (name_entry, value_entry)
@@ -99,13 +107,13 @@ class CustomFieldsDialog:
         """Add a new empty field to the dialog"""
         row = len(self.entries)
         
-        ttk.Label(self.fields_frame, text="Name:").grid(row=row, column=0, padx=2)
+        ttk.Label(self.fields_frame, text="Name:").grid(row=row, column=0, padx=2, sticky=tk.E)
         name_entry = ttk.Entry(self.fields_frame)
-        name_entry.grid(row=row, column=1, padx=2)
+        name_entry.grid(row=row, column=1, padx=2, sticky=tk.EW)
         
-        ttk.Label(self.fields_frame, text="Value:").grid(row=row, column=2, padx=2)
+        ttk.Label(self.fields_frame, text="Value:").grid(row=row, column=2, padx=2, sticky=tk.E)
         value_entry = ttk.Entry(self.fields_frame)
-        value_entry.grid(row=row, column=3, padx=2)
+        value_entry.grid(row=row, column=3, padx=2, sticky=tk.EW)
         
         self.entries[row] = (name_entry, value_entry)
         

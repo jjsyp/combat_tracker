@@ -22,24 +22,33 @@ class CharacterList:
         
         # Create Treeview
         self.character_tree = ttk.Treeview(self.parent_frame)
-        self.character_tree.pack(fill=tk.BOTH, expand=True)
+
         
-        # Add scrollbar
-        scrollbar = ttk.Scrollbar(self.parent_frame, orient="vertical", command=self.character_tree.yview)
-        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
-        self.character_tree.configure(yscrollcommand=scrollbar.set)
+        # Add vertical scrollbar
+        y_scrollbar = ttk.Scrollbar(self.parent_frame, orient="vertical", command=self.character_tree.yview)
+        y_scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        
+        # Add horizontal scrollbar
+        x_scrollbar = ttk.Scrollbar(self.parent_frame, orient="horizontal", command=self.character_tree.xview)
+        x_scrollbar.pack(side=tk.BOTTOM, fill=tk.X)
+        
+        # Configure tree scrolling
+        self.character_tree.configure(yscrollcommand=y_scrollbar.set, xscrollcommand=x_scrollbar.set)
+        
+        # Configure tree to expand with window
+        self.character_tree.pack(fill=tk.BOTH, expand=True)
         
         # Configure columns
         self.character_tree['columns'] = ('name', 'initiative', 'bonus', 'health', 'ac', 'custom_fields')
         
-        # Format columns
+        # Format columns with minimum widths and stretch enabled
         self.character_tree.column('#0', width=0, stretch=tk.NO)  # Hidden ID column
-        self.character_tree.column('name', anchor=tk.W, width=120)
-        self.character_tree.column('initiative', anchor=tk.CENTER, width=60)
-        self.character_tree.column('bonus', anchor=tk.CENTER, width=50)
-        self.character_tree.column('health', anchor=tk.CENTER, width=60)
-        self.character_tree.column('ac', anchor=tk.CENTER, width=60)
-        self.character_tree.column('custom_fields', anchor=tk.W, width=200)
+        self.character_tree.column('name', anchor=tk.W, width=120, minwidth=100, stretch=tk.YES)
+        self.character_tree.column('initiative', anchor=tk.CENTER, width=60, minwidth=60, stretch=tk.YES)
+        self.character_tree.column('bonus', anchor=tk.CENTER, width=50, minwidth=50, stretch=tk.YES)
+        self.character_tree.column('health', anchor=tk.CENTER, width=60, minwidth=60, stretch=tk.YES)
+        self.character_tree.column('ac', anchor=tk.CENTER, width=60, minwidth=50, stretch=tk.YES)
+        self.character_tree.column('custom_fields', anchor=tk.W, width=200, minwidth=150, stretch=tk.YES)
         
         # Create headings
         self.character_tree.heading('#0', text='', anchor=tk.W)
