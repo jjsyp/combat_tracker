@@ -84,11 +84,13 @@ class CharacterDetails:
                 messagebox.showerror("Error", "Please enter a name for the character")
                 return
                 
+            initial_health = int(self.health_var.get() or 0)
             char = Character(
                 name=name,
                 initiative=int(self.initiative_var.get() or 0),
                 initiative_bonus=int(self.bonus_var.get() or 0),
-                health=int(self.health_var.get() or 0),
+                health=initial_health,
+                maxhp=initial_health,
                 ac=int(self.ac_var.get() or 0)
             )
             

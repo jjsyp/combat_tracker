@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
+from GUI.components.health_edit_dialog import HealthEditDialog
 
 class CharacterList:
     def __init__(self, parent_frame, parent):
@@ -46,7 +47,7 @@ class CharacterList:
         self.character_tree.column('name', anchor=tk.W, width=120, minwidth=100, stretch=tk.NO)
         self.character_tree.column('initiative', anchor=tk.CENTER, width=75, minwidth=75, stretch=tk.NO)
         self.character_tree.column('bonus', anchor=tk.CENTER, width=50, minwidth=50, stretch=tk.NO)
-        self.character_tree.column('health', anchor=tk.CENTER, width=55, minwidth=55, stretch=tk.NO)
+        self.character_tree.column('health', anchor=tk.CENTER, width=100, minwidth=100, stretch=tk.NO)
         self.character_tree.column('ac', anchor=tk.CENTER, width=40, minwidth=40, stretch=tk.NO)
         self.character_tree.column('custom_fields', anchor=tk.W, width=200, minwidth=150, stretch=tk.YES)
         
@@ -103,9 +104,18 @@ class CharacterList:
         # Get column name from column number
         column_name = self.character_tree['columns'][int(column[1]) - 1]
         
-        # Don't edit custom fields directly
+        # Handle special fields
         if column_name == 'custom_fields':
             self.parent.edit_custom_fields(item)
+            return
+        elif column_name == 'health':
+            # Get the character
+            items = self.character_tree.get_children()
+            char_index = items.index(item)
+            char = self.parent.characters[char_index]
+            
+            # Show health edit dialog
+            HealthEditDialog(self.parent_frame.winfo_toplevel(), char, lambda: self.parent.update_character_list())
             return
             
         # Get the current value
@@ -123,8 +133,11 @@ class CharacterList:
         bbox = self.get_cell_bbox(item, column)
         if not bbox:
             return
+            
+        # Store current edit info
+        self.current_edit = {'item': item, 'column_name': column_name}
         
-        # Create entry widget
+        # Create regular entry widget for all non-special fields
         self.popup_entry = ttk.Entry(self.character_tree)
         self.popup_entry.insert(0, current_value)
         self.popup_entry.select_range(0, tk.END)
@@ -135,25 +148,20 @@ class CharacterList:
         # Give focus to the entry
         self.popup_entry.focus_set()
         
-        # Store current edit info for focus out
-        self.current_edit = {'item': item, 'column_name': column_name}
-        
         # Bind events
         self.popup_entry.bind('<Return>', lambda e: self.finish_edit())
         self.popup_entry.bind('<Escape>', lambda e: self.cancel_edit())
         self.popup_entry.bind('<FocusOut>', lambda e: self.finish_edit())
 
+
     def finish_edit(self):
         """Save the edited value"""
-        if not self.popup_entry or not hasattr(self, 'current_edit'):
+        if not hasattr(self, 'current_edit'):
             return
             
         # Get the edit info
         item = self.current_edit['item']
         column_name = self.current_edit['column_name']
-        
-        # Get the new value
-        new_value = self.popup_entry.get().strip()
         
         # Get the character index
         items = self.character_tree.get_children()
@@ -161,6 +169,9 @@ class CharacterList:
         char = self.parent.characters[char_index]
         
         try:
+            # Get value from popup_entry
+            new_value = self.popup_entry.get().strip()
+            
             # Update the character attribute based on column
             if column_name == 'name':
                 char.name = new_value
@@ -172,11 +183,9 @@ class CharacterList:
                 char.initiative_bonus = int(new_value)
                 # Select this character after sorting
                 self.last_edited_name = char.name
-            elif column_name == 'health':
-                char.health = int(new_value)
             elif column_name == 'ac':
                 char.ac = int(new_value)
-                
+            
             # Update the display
             self.parent.update_character_list()
             
@@ -190,21 +199,23 @@ class CharacterList:
                         break
                 delattr(self, 'last_edited_name')
             
-        except ValueError:
-            messagebox.showerror("Error", f"Invalid value for {column_name}")
+        except ValueError as e:
+            messagebox.showerror("Error", str(e) if str(e) else f"Invalid value for {column_name}")
         finally:
-            # Clean up
-            if self.popup_entry:
-                self.popup_entry.destroy()
-                self.popup_entry = None
-            if hasattr(self, 'current_edit'):
-                del self.current_edit
+            self.cancel_edit()
 
     def cancel_edit(self):
         """Cancel the current edit"""
         if self.popup_entry:
             self.popup_entry.destroy()
             self.popup_entry = None
+        if hasattr(self, 'popup_frame'):
+            self.popup_frame.destroy()
+            del self.popup_frame
+            if hasattr(self, 'current_hp_entry'):
+                del self.current_hp_entry
+            if hasattr(self, 'max_hp_entry'):
+                del self.max_hp_entry
 
     def update_character_list(self, characters):
         """Update the character list display"""
@@ -224,7 +235,7 @@ class CharacterList:
                 char.name,
                 char.initiative,
                 char.initiative_bonus,
-                char.health,
+                f"{char.health}/{char.maxhp}",
                 char.ac,
                 custom_fields_str
             ))
