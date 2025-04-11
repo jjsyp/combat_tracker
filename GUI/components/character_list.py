@@ -1,6 +1,5 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
-from GUI.components.health_edit_dialog import HealthEditDialog
 
 class CharacterList:
     def __init__(self, parent_frame, parent):
@@ -108,18 +107,18 @@ class CharacterList:
         if column_name == 'custom_fields':
             self.parent.edit_custom_fields(item)
             return
-        elif column_name == 'health':
-            # Get the character
-            items = self.character_tree.get_children()
-            char_index = items.index(item)
-            char = self.parent.characters[char_index]
-            
-            # Show health edit dialog
-            HealthEditDialog(self.parent_frame.winfo_toplevel(), char, lambda: self.parent.update_character_list())
-            return
-            
+        
+        # Get the character
+        items = self.character_tree.get_children()
+        char_index = items.index(item)
+        char = self.parent.characters[char_index]
+        
         # Get the current value
         current_value = self.character_tree.item(item)['values'][int(column[1]) - 1]
+        
+        # If editing health, extract just the current health value
+        if column_name == 'health':
+            current_value = current_value.split('/')[0]
         
         # Create and position the entry widget
         self.start_edit(item, column, column_name, str(current_value))
@@ -183,6 +182,18 @@ class CharacterList:
                 char.initiative_bonus = int(new_value)
                 # Select this character after sorting
                 self.last_edited_name = char.name
+            elif column_name == 'health':
+                try:
+                    new_health = int(new_value)
+                    if new_health < 0:
+                        raise ValueError("Health cannot be negative")
+                    if new_health > char.maxhp:
+                        raise ValueError("Current health cannot exceed maximum health")
+                    char.health = new_health
+                except ValueError as e:
+                    messagebox.showerror("Invalid Input", str(e))
+                    self.popup_entry.focus_set()
+                    return
             elif column_name == 'ac':
                 char.ac = int(new_value)
             
