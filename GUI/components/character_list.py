@@ -121,9 +121,14 @@ class CharacterList:
             current_value = current_value.split(' | ')[0]
         
         # Create and position the entry widget
-        self.start_edit(item, column, column_name, str(current_value))
+        if column_name == 'health':
+            # Pass both current health and max hp for health editing
+            max_hp = char.maxhp
+            self.start_edit(item, column, column_name, str(current_value), max_hp=max_hp)
+        else:
+            self.start_edit(item, column, column_name, str(current_value))
 
-    def start_edit(self, item, column, column_name, current_value):
+    def start_edit(self, item, column, column_name, current_value, max_hp=None):
         """Start editing a cell"""
         # Cancel any existing edit
         self.cancel_edit()
@@ -136,13 +141,30 @@ class CharacterList:
         # Store current edit info
         self.current_edit = {'item': item, 'column_name': column_name}
         
-        # Create regular entry widget for all non-special fields
-        self.popup_entry = ttk.Entry(self.character_tree)
-        self.popup_entry.insert(0, current_value)
-        self.popup_entry.select_range(0, tk.END)
-        
-        # Position the entry widget
-        self.popup_entry.place(x=bbox[0], y=bbox[1], width=bbox[2], height=bbox[3])
+        if column_name == 'health' and max_hp is not None:
+            # Create frame to hold both entry and max hp label
+            self.popup_frame = ttk.Frame(self.character_tree)
+            
+            # Create entry for current health
+            self.popup_entry = ttk.Entry(self.popup_frame, width=5)
+            self.popup_entry.pack(side=tk.LEFT)
+            self.popup_entry.insert(0, current_value)
+            self.popup_entry.select_range(0, tk.END)
+            
+            # Add separator and max hp
+            ttk.Label(self.popup_frame, text=" | ").pack(side=tk.LEFT)
+            ttk.Label(self.popup_frame, text=str(max_hp)).pack(side=tk.LEFT)
+            
+            # Position the frame
+            self.popup_frame.place(x=bbox[0], y=bbox[1], width=bbox[2], height=bbox[3])
+        else:
+            # Create regular entry widget for all non-special fields
+            self.popup_entry = ttk.Entry(self.character_tree)
+            self.popup_entry.insert(0, current_value)
+            self.popup_entry.select_range(0, tk.END)
+            
+            # Position the entry widget
+            self.popup_entry.place(x=bbox[0], y=bbox[1], width=bbox[2], height=bbox[3])
         
         # Give focus to the entry
         self.popup_entry.focus_set()
