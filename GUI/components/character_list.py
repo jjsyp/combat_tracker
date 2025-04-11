@@ -118,7 +118,7 @@ class CharacterList:
         
         # If editing health, extract just the current health value
         if column_name == 'health':
-            current_value = current_value.split('/')[0]
+            current_value = current_value.split(' | ')[0]
         
         # Create and position the entry widget
         self.start_edit(item, column, column_name, str(current_value))
@@ -246,7 +246,7 @@ class CharacterList:
                 char.name,
                 char.initiative,
                 char.initiative_bonus,
-                f"{char.health}/{char.maxhp}",
+                f"{char.health} | {char.maxhp}",
                 char.ac,
                 custom_fields_str
             ))
