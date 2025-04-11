@@ -244,10 +244,7 @@ class CharacterList:
         if hasattr(self, 'popup_frame'):
             self.popup_frame.destroy()
             del self.popup_frame
-            if hasattr(self, 'current_hp_entry'):
-                del self.current_hp_entry
-            if hasattr(self, 'max_hp_entry'):
-                del self.max_hp_entry
+
 
     def update_character_list(self, characters):
         """Update the character list display"""
