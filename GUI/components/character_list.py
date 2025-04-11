@@ -209,9 +209,8 @@ class CharacterList:
                     new_health = int(new_value)
                     if new_health < 0:
                         raise ValueError("Health cannot be negative")
-                    if new_health > char.maxhp:
-                        raise ValueError("Current health cannot exceed maximum health")
-                    char.health = new_health
+                    # Cap health at max HP instead of showing warning
+                    char.health = min(new_health, char.maxhp)
                 except ValueError as e:
                     messagebox.showerror("Invalid Input", str(e))
                     self.popup_entry.focus_set()
