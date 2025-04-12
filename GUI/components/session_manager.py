@@ -58,9 +58,15 @@ class SessionManager:
         # Convert characters to dictionaries
         characters_data = [char.to_dict() for char in self.parent.characters]
         
+        # Create save data with characters and round number
+        save_data = {
+            'characters': characters_data,
+            'round': self.parent.round_counter.get_round()
+        }
+        
         # Save to file
         with open(file_path, 'w') as f:
-            json.dump(characters_data, f, indent=2)
+            json.dump(save_data, f, indent=2)
     
     def load_session(self):
         """Load a session from a chosen file"""
@@ -104,7 +110,15 @@ class SessionManager:
             file_path: Path to load the file from
         """
         with open(file_path, 'r') as f:
-            characters_data = json.load(f)
+            save_data = json.load(f)
+            
+        # Handle legacy save files that only contain character data
+        if isinstance(save_data, list):
+            characters_data = save_data
+            round_number = 1  # Default to round 1 for legacy saves
+        else:
+            characters_data = save_data.get('characters', [])
+            round_number = save_data.get('round', 1)
         
         # Clear current characters
         self.parent.characters.clear()
@@ -112,6 +126,9 @@ class SessionManager:
         # Create new characters from data
         for char_data in characters_data:
             self.parent.characters.append(Character.from_dict(char_data))
+            
+        # Update round counter
+        self.parent.round_counter.set_round(round_number)
         
         # Update the display
         self.parent.update_character_list()
@@ -125,8 +142,9 @@ class SessionManager:
             with open(state_path, 'w') as f:
                 json.dump({'in_combat': False}, f)
             
-            # Clear characters
+            # Clear characters and reset round
             self.parent.characters.clear()
+            self.parent.round_counter.set_round(1)
             self.parent.update_character_list()
             
             # Remove last session file if it exists
