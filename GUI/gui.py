@@ -13,6 +13,7 @@ class CombatTrackerGUI:
         self.characters: List[Character] = []
         self.custom_fields: List[str] = []
         self.popup_entry = None
+        self.current_round = 1
         
         # Initialize app configuration
         from GUI.components.app_config import AppConfig
@@ -26,6 +27,7 @@ class CombatTrackerGUI:
         self.character_detail_frame = self.app_config.detail_frame
         
         # Initialize UI
+        self.setup_round_counter()
         self.setup_character_list()
         self.setup_character_details()
         
@@ -68,6 +70,11 @@ class CombatTrackerGUI:
         """Proxy method to maintain backward compatibility"""
         self.session_manager.load_from_file(file_path)
         
+    def setup_round_counter(self):
+        """Initialize the round counter"""
+        from GUI.components.round_counter import RoundCounter
+        self.round_counter = RoundCounter(self.character_list_frame)
+
     def setup_character_list(self):
         """Initialize the character list view"""
         from GUI.components.character_list import CharacterList
