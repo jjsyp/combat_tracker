@@ -3,32 +3,70 @@ from tkinter import ttk
 
 class RoundCounter:
     def __init__(self, parent):
+        # Main container frame
         self.frame = ttk.Frame(parent)
         self.frame.pack(fill=tk.X, padx=5, pady=5)
         
+        # Create round counter frame
+        self.round_frame = ttk.Frame(self.frame)
+        self.round_frame.pack(fill=tk.X)
+        
         # Create a label for "Round:"
-        self.round_label = ttk.Label(self.frame, text="Round:")
+        self.round_label = ttk.Label(self.round_frame, text="Round:")
         self.round_label.pack(side=tk.LEFT, padx=(0, 5))
         
-        # Create buttons frame
-        self.buttons_frame = ttk.Frame(self.frame)
-        self.buttons_frame.pack(side=tk.LEFT)
+        # Create buttons frame for round control
+        self.round_buttons_frame = ttk.Frame(self.round_frame)
+        self.round_buttons_frame.pack(side=tk.LEFT)
         
         # Create decrement button
-        self.decrement_button = ttk.Button(self.buttons_frame, text="-", width=2,
+        self.decrement_button = ttk.Button(self.round_buttons_frame, text="-", width=2,
                                          command=self.decrement_round)
         self.decrement_button.pack(side=tk.LEFT)
         
         # Create a label to display the round number
         self.round_number = tk.StringVar(value="1")
-        self.round_display = ttk.Label(self.buttons_frame, textvariable=self.round_number,
+        self.round_display = ttk.Label(self.round_buttons_frame, textvariable=self.round_number,
                                       width=3, anchor=tk.CENTER)
         self.round_display.pack(side=tk.LEFT, padx=3)
         
         # Create increment button
-        self.increment_button = ttk.Button(self.buttons_frame, text="+", width=2,
+        self.increment_button = ttk.Button(self.round_buttons_frame, text="+", width=2,
                                          command=self.increment_round)
         self.increment_button.pack(side=tk.LEFT)
+        
+        # Create turn control frame
+        self.turn_frame = ttk.Frame(self.frame)
+        self.turn_frame.pack(fill=tk.X, pady=(5, 0))
+        
+        # Create a label for "Turn:"
+        self.turn_label = ttk.Label(self.turn_frame, text="Turn:")
+        self.turn_label.pack(side=tk.LEFT, padx=(0, 5))
+        
+        # Create buttons frame for turn control
+        self.turn_buttons_frame = ttk.Frame(self.turn_frame)
+        self.turn_buttons_frame.pack(side=tk.LEFT)
+        
+        # Create previous turn button
+        self.prev_turn_button = ttk.Button(self.turn_buttons_frame, text="Previous", width=8)
+        self.prev_turn_button.pack(side=tk.LEFT)
+        
+        # Create next turn button
+        self.next_turn_button = ttk.Button(self.turn_buttons_frame, text="Next", width=8)
+        self.next_turn_button.pack(side=tk.LEFT, padx=(5, 0))
+        
+        # Create current turn display
+        self.current_turn_frame = ttk.Frame(self.turn_frame)
+        self.current_turn_frame.pack(side=tk.LEFT, padx=(15, 0))
+        
+        # Label for "Current Turn:"
+        self.current_turn_label = ttk.Label(self.current_turn_frame, text="Current Turn:")
+        self.current_turn_label.pack(side=tk.LEFT)
+        
+        # Display current character name
+        self.current_character = tk.StringVar(value="-")
+        self.current_character_label = ttk.Label(self.current_turn_frame, textvariable=self.current_character)
+        self.current_character_label.pack(side=tk.LEFT, padx=(5, 0))
         
     def set_round(self, round_num):
         """Set the round number"""
