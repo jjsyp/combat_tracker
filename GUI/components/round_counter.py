@@ -1,12 +1,17 @@
 import tkinter as tk
-from tkinter import ttk
+from tkinter import ttk, messagebox
 
 class RoundCounter:
-    def __init__(self, parent):
+    def __init__(self, parent, gui_ref=None):
         # Main container frame
         self.frame = ttk.Frame(parent)
         self.frame.pack(fill=tk.X, padx=5, pady=5)
-        
+        self.gui_ref = gui_ref  # Reference to main GUI for character access
+
+        # Start Combat button
+        self.start_combat_button = ttk.Button(self.frame, text="Start Combat", command=self.start_combat)
+        self.start_combat_button.pack(fill=tk.X, pady=(0, 10))
+
         # Create round counter frame
         self.round_frame = ttk.Frame(self.frame)
         self.round_frame.pack(fill=tk.X)
@@ -67,10 +72,31 @@ class RoundCounter:
         self.current_character = tk.StringVar(value="-")
         self.current_character_label = ttk.Label(self.current_turn_frame, textvariable=self.current_character)
         self.current_character_label.pack(side=tk.LEFT, padx=(5, 0))
+
+        # Track combat state
+        self.combat_started = False
+
         
     def set_round(self, round_num):
         """Set the round number"""
         self.round_number.set(str(round_num))
+
+    def start_combat(self):
+        """Handle start combat button press"""
+        characters = []
+        if self.gui_ref:
+            characters = getattr(self.gui_ref, 'characters', [])
+        if not characters:
+            messagebox.showwarning("No Characters", "You can't start combat without characters!")
+            return
+        # Set current character to the first in list
+        self.set_current_character(characters[0].name if hasattr(characters[0], 'name') else str(characters[0]))
+        self.combat_started = True
+        self.start_combat_button.pack_forget()
+
+    def set_current_character(self, name):
+        self.current_character.set(name)
+
         
     def get_round(self):
         """Get the current round number"""

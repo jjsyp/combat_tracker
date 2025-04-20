@@ -73,7 +73,7 @@ class CombatTrackerGUI:
     def setup_round_counter(self):
         """Initialize the round counter"""
         from GUI.components.round_counter import RoundCounter
-        self.round_counter = RoundCounter(self.character_list_frame)
+        self.round_counter = RoundCounter(self.character_list_frame, gui_ref=self)
 
     def setup_character_list(self):
         """Initialize the character list view"""
