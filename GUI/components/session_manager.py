@@ -58,10 +58,25 @@ class SessionManager:
         # Convert characters to dictionaries
         characters_data = [char.to_dict() for char in self.parent.characters]
         
+        # Get current turn index (if combat started)
+        current_turn_index = None
+        combat_started = False
+        if hasattr(self.parent, 'round_counter'):
+            rc = self.parent.round_counter
+            combat_started = getattr(rc, 'combat_started', False)
+            if combat_started:
+                # Find current character index
+                current_name = rc.current_character.get()
+                for idx, char in enumerate(self.parent.characters):
+                    if getattr(char, 'name', None) == current_name:
+                        current_turn_index = idx
+                        break
         # Create save data with characters and round number
         save_data = {
             'characters': characters_data,
-            'round': self.parent.round_counter.get_round()
+            'round': self.parent.round_counter.get_round(),
+            'combat_started': combat_started,
+            'current_turn_index': current_turn_index
         }
         
         # Save to file
@@ -116,9 +131,13 @@ class SessionManager:
         if isinstance(save_data, list):
             characters_data = save_data
             round_number = 1  # Default to round 1 for legacy saves
+            combat_started = False
+            current_turn_index = None
         else:
             characters_data = save_data.get('characters', [])
             round_number = save_data.get('round', 1)
+            combat_started = save_data.get('combat_started', False)
+            current_turn_index = save_data.get('current_turn_index', None)
         
         # Clear current characters
         self.parent.characters.clear()
@@ -126,9 +145,22 @@ class SessionManager:
         # Create new characters from data
         for char_data in characters_data:
             self.parent.characters.append(Character.from_dict(char_data))
-            
+        
         # Update round counter
         self.parent.round_counter.set_round(round_number)
+        
+        # Restore combat state and current turn
+        if combat_started:
+            self.parent.round_counter.combat_started = True
+            self.parent.round_counter.start_combat_button.pack_forget()
+            # Set current turn if valid
+            if current_turn_index is not None and 0 <= current_turn_index < len(self.parent.characters):
+                char = self.parent.characters[current_turn_index]
+                self.parent.round_counter.set_current_character(getattr(char, 'name', str(char)))
+        else:
+            self.parent.round_counter.combat_started = False
+            self.parent.round_counter.set_current_character("-")
+            self.parent.round_counter.start_combat_button.pack(fill=tk.X, pady=(0, 10))
         
         # Update the display
         self.parent.update_character_list()
