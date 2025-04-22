@@ -6,6 +6,7 @@ import json
 import os
 from character.character import Character
 from PIL import Image, ImageTk
+from GUI.components.quick_edit import QuickEdit
 
 class CombatTrackerGUI:
     def __init__(self, root):
@@ -97,8 +98,20 @@ class CombatTrackerGUI:
 
     def setup_character_details(self):
         """Initialize the character details panel"""
+        # Create a frame for character details
+        self.details_frame = ttk.Frame(self.character_detail_frame)
+        self.details_frame.pack(fill=tk.BOTH, expand=True)
+        
+        # Create a frame for quick edit
+        self.quick_edit_frame = ttk.Frame(self.character_detail_frame)
+        
+        # Initialize both panels
         from GUI.components.character_details import CharacterDetails
-        self.character_details = CharacterDetails(self.character_detail_frame, self)
+        self.character_details = CharacterDetails(self.details_frame, self)
+        self.quick_edit = QuickEdit(self.quick_edit_frame, self)
+        
+        # Start with character details visible
+        self.show_character_details()
 
     def add_character(self):
         """Proxy method to maintain backward compatibility"""
@@ -167,6 +180,24 @@ class CombatTrackerGUI:
         """Proxy method to maintain backward compatibility"""
         return self.character_details.add_custom_field(field_name, value)
 
+    def show_character_details(self):
+        """Show the character details panel"""
+        self.quick_edit_frame.pack_forget()
+        self.details_frame.pack(fill=tk.BOTH, expand=True)
+        
+    def show_quick_edit(self):
+        """Show the quick edit panel"""
+        self.details_frame.pack_forget()
+        self.quick_edit_frame.pack(fill=tk.BOTH, expand=True)
+        
+    def on_character_selected(self, character):
+        """Handle character selection"""
+        if character:
+            self.show_quick_edit()
+            self.quick_edit.show_character(character)
+        else:
+            self.show_character_details()
+            
     def on_closing(self):
         """Handle window closing event"""
         self.session_manager.auto_save_on_close()

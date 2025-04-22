@@ -71,6 +71,8 @@ class CharacterList:
         
         # Bind double-click event
         self.character_tree.bind('<Double-1>', self.on_double_click)
+        # Bind selection event
+        self.character_tree.bind('<<TreeviewSelect>>', self.on_select)
         
         # Buttons Frame
         btn_frame = ttk.Frame(self.parent_frame)
@@ -303,3 +305,9 @@ class CharacterList:
         items = self.character_tree.get_children()
         char_index = items.index(selected[0])
         return self.parent.characters[char_index]
+        
+    def on_select(self, event):
+        """Handle selection of a character"""
+        character = self.get_selected_character()
+        if hasattr(self.parent, 'on_character_selected'):
+            self.parent.on_character_selected(character)
