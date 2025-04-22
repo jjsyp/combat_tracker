@@ -13,12 +13,22 @@ class CharacterList:
         self.parent_frame = parent_frame
         self.parent = parent
         self.popup_entry = None
+        self.round_counter = getattr(parent, 'round_counter', None)
+        
+        # Set up trace on current character if available
+        if self.round_counter and hasattr(self.round_counter, 'current_character'):
+            self.round_counter.current_character.trace_add('write', self._on_current_character_change)
+            
         self.setup_character_list()
         
     def setup_character_list(self):
         """Initialize the character list view"""
         # Character List Label
         ttk.Label(self.parent_frame, text="Characters").pack()
+        
+        # Create bold style for current character
+        self.style = ttk.Style()
+        self.style.configure('Bold.Treeview.Item', font=('TkDefaultFont', 9, 'bold'))
         
         # Create Treeview
         self.character_tree = ttk.Treeview(self.parent_frame)
@@ -255,12 +265,18 @@ class CharacterList:
         # Sort characters by initiative
         sorted_chars = sorted(characters, key=lambda x: (-x.initiative, -x.initiative_bonus))
         
+        # Get current character name
+        current_name = None
+        if self.round_counter and hasattr(self.round_counter, 'current_character'):
+            current_name = self.round_counter.current_character.get()
+        
         # Add characters to tree
         for char in sorted_chars:
             # Format custom fields for display
             custom_fields_str = ', '.join(f"{k}: {v}" for k, v in char.custom_fields.items())
             
-            self.character_tree.insert('', 'end', values=(
+            # Insert the character
+            item = self.character_tree.insert('', 'end', values=(
                 char.name,
                 char.initiative,
                 char.initiative_bonus,
@@ -268,7 +284,17 @@ class CharacterList:
                 char.ac,
                 custom_fields_str
             ))
+            
+            # Apply bold style if this is the current character
+            if current_name and char.name == current_name:
+                self.character_tree.tag_configure('bold', font=('TkDefaultFont', 9, 'bold'))
+                self.character_tree.item(item, tags=('bold',))
 
+    def _on_current_character_change(self, *args):
+        """Called when the current character changes"""
+        if hasattr(self.parent, 'characters'):
+            self.update_character_list(self.parent.characters)
+    
     def get_selected_character(self):
         """Get the currently selected character"""
         selected = self.character_tree.selection()
