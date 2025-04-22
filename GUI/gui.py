@@ -148,7 +148,14 @@ class CombatTrackerGUI:
         items = self.character_list.character_tree.get_children()
         idx = items.index(selected[0])
         
-        self.characters.pop(idx)
+        deleted_char = self.characters.pop(idx)
+        # If the deleted character was the current turn, advance turn or clear
+        if hasattr(self.round_counter, "current_character"):
+            if self.round_counter.current_character.get() == getattr(deleted_char, 'name', str(deleted_char)):
+                if self.characters:
+                    self.round_counter.next_turn()
+                else:
+                    self.round_counter.set_current_character("-")
         self.update_character_list()
 
     def end_combat(self):
