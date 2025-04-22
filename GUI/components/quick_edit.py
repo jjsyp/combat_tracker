@@ -21,16 +21,32 @@ class QuickEdit:
         self.name_label = ttk.Label(self.parent_frame, text="", font=('TkDefaultFont', 12))
         self.name_label.pack(fill=tk.X, pady=(0, 10))
         
-        # Add placeholder sections to maintain size
-        for section in ["Health", "Initiative", "Armor Class", "Custom Fields"]:
-            frame = ttk.LabelFrame(self.parent_frame, text=section)
-            frame.pack(fill=tk.X, pady=5)
-            # Add some padding inside to maintain height
-            ttk.Frame(frame, height=30).pack(pady=5)
+        # Health section
+        self.health_frame = ttk.LabelFrame(self.parent_frame, text="Health")
+        self.health_frame.pack(fill=tk.X, pady=5)
+        
+        # Current / Max HP display
+        hp_display = ttk.Frame(self.health_frame)
+        hp_display.pack(fill=tk.X, padx=5, pady=5)
+        
+        ttk.Label(hp_display, text="Current HP:").pack(side=tk.LEFT, padx=(0, 5))
+        self.current_hp_label = ttk.Label(hp_display, text="-")
+        self.current_hp_label.pack(side=tk.LEFT, padx=(0, 10))
+        
+        ttk.Label(hp_display, text="Max HP:").pack(side=tk.LEFT, padx=(0, 5))
+        self.max_hp_label = ttk.Label(hp_display, text="-")
+        self.max_hp_label.pack(side=tk.LEFT)
+        
+        # Add some padding at the bottom to maintain spacing
+        ttk.Frame(self.parent_frame, height=30).pack(pady=5, fill=tk.X)
 
     def show_character(self, character):
         """Update the quick edit panel with the selected character"""
         if character:
             self.name_label.config(text=character.name)
+            self.current_hp_label.config(text=str(character.health))
+            self.max_hp_label.config(text=str(character.maxhp))
         else:
             self.name_label.config(text="")
+            self.current_hp_label.config(text="-")
+            self.max_hp_label.config(text="-")
