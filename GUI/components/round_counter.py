@@ -97,52 +97,48 @@ class RoundCounter:
     def set_current_character(self, name):
         self.current_character.set(name)
 
+    def get_character_name(self, char):
+        return getattr(char, 'name', str(char))
+
+    def get_current_character_index(self):
+        characters = getattr(self.gui_ref, 'characters', [])
+        current_name = self.current_character.get()
+        for idx, char in enumerate(characters):
+            if self.get_character_name(char) == current_name:
+                return idx
+        return None
+
     def next_turn(self):
-        """Advance to the next character in the list, cycling to the top if at the end. Increment round if cycling."""
         if not self.combat_started or not self.gui_ref:
             return
         characters = getattr(self.gui_ref, 'characters', [])
         if not characters:
+            self.set_current_character("-")
             return
-        current_name = self.current_character.get()
-        current_idx = None
-        for idx, char in enumerate(characters):
-            if getattr(char, 'name', None) == current_name:
-                current_idx = idx
-                break
-        # If not found (should only happen if something is out of sync), start at the top
-        if current_idx is None:
-            self.set_current_character(getattr(characters[0], 'name', str(characters[0])))
+        idx = self.get_current_character_index()
+        if idx is None:
+            self.set_current_character(self.get_character_name(characters[0]))
             return
-        # Move to next character, or cycle to top
-        next_idx = (current_idx + 1) % len(characters)
+        next_idx = (idx + 1) % len(characters)
         if next_idx == 0:
             self.increment_round()
-        self.set_current_character(getattr(characters[next_idx], 'name', str(characters[next_idx])))
+        self.set_current_character(self.get_character_name(characters[next_idx]))
 
-        
     def previous_turn(self):
-        """Go to the previous character in the list, cycling to the bottom if at the top. Decrement round if cycling (not below 1)."""
         if not self.combat_started or not self.gui_ref:
             return
         characters = getattr(self.gui_ref, 'characters', [])
         if not characters:
+            self.set_current_character("-")
             return
-        current_name = self.current_character.get()
-        current_idx = None
-        for idx, char in enumerate(characters):
-            if getattr(char, 'name', None) == current_name:
-                current_idx = idx
-                break
-        # If not found, start at the bottom
-        if current_idx is None:
-            self.set_current_character(getattr(characters[-1], 'name', str(characters[-1])))
+        idx = self.get_current_character_index()
+        if idx is None:
+            self.set_current_character(self.get_character_name(characters[-1]))
             return
-        # Move to previous character, or cycle to bottom
-        prev_idx = (current_idx - 1) % len(characters)
+        prev_idx = (idx - 1) % len(characters)
         if prev_idx == len(characters) - 1:
             self.decrement_round()
-        self.set_current_character(getattr(characters[prev_idx], 'name', str(characters[prev_idx])))
+        self.set_current_character(self.get_character_name(characters[prev_idx]))
 
     def get_round(self):
         """Get the current round number"""
