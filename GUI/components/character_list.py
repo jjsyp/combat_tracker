@@ -28,7 +28,7 @@ class CharacterList:
         
         # Create bold style for current character
         self.style = ttk.Style()
-        self.style.configure('Bold.Treeview.Item', font=('TkDefaultFont', 9, 'bold'))
+        self.style.configure('Bold.Treeview.Item', font=('TkDefaultFont', 12, 'bold'))
         
         # Create Treeview
         self.character_tree = ttk.Treeview(self.parent_frame)
@@ -287,7 +287,7 @@ class CharacterList:
             
             # Apply bold style if this is the current character
             if current_name and char.name == current_name:
-                self.character_tree.tag_configure('bold', font=('TkDefaultFont', 9, 'bold'))
+                self.character_tree.tag_configure('bold', font=('TkDefaultFont', 11, 'bold'))
                 self.character_tree.item(item, tags=('bold',))
 
     def _on_current_character_change(self, *args):
