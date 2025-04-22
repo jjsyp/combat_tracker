@@ -73,6 +73,8 @@ class CharacterList:
         self.character_tree.bind('<Double-1>', self.on_double_click)
         # Bind selection event
         self.character_tree.bind('<<TreeviewSelect>>', self.on_select)
+        # Bind click event for empty area detection
+        self.character_tree.bind('<Button-1>', self.on_click)
         
         # Buttons Frame
         btn_frame = ttk.Frame(self.parent_frame)
@@ -311,3 +313,13 @@ class CharacterList:
         character = self.get_selected_character()
         if hasattr(self.parent, 'on_character_selected'):
             self.parent.on_character_selected(character)
+            
+    def on_click(self, event):
+        """Handle clicks on the tree view"""
+        region = self.character_tree.identify('region', event.x, event.y)
+        # If clicked in an empty area (not on a row)
+        if region == 'nothing':
+            # Clear selection and notify parent
+            self.character_tree.selection_remove(self.character_tree.selection())
+            if hasattr(self.parent, 'on_character_selected'):
+                self.parent.on_character_selected(None)
