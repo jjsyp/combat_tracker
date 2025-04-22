@@ -53,7 +53,7 @@ class RoundCounter:
         self.turn_buttons_frame.pack(side=tk.LEFT)
         
         # Create previous turn button
-        self.prev_turn_button = ttk.Button(self.turn_buttons_frame, text="Previous", width=8)
+        self.prev_turn_button = ttk.Button(self.turn_buttons_frame, text="Previous", width=8, command=self.previous_turn)
         self.prev_turn_button.pack(side=tk.LEFT)
         
         # Create next turn button
@@ -119,6 +119,27 @@ class RoundCounter:
         self.set_current_character(getattr(characters[next_idx], 'name', str(characters[next_idx])))
 
         
+    def previous_turn(self):
+        """Go to the previous character in the list, cycling to the bottom if at the top."""
+        if not self.combat_started or not self.gui_ref:
+            return
+        characters = getattr(self.gui_ref, 'characters', [])
+        if not characters:
+            return
+        current_name = self.current_character.get()
+        current_idx = None
+        for idx, char in enumerate(characters):
+            if getattr(char, 'name', None) == current_name:
+                current_idx = idx
+                break
+        # If not found, start at the bottom
+        if current_idx is None:
+            self.set_current_character(getattr(characters[-1], 'name', str(characters[-1])))
+            return
+        # Move to previous character, or cycle to bottom
+        prev_idx = (current_idx - 1) % len(characters)
+        self.set_current_character(getattr(characters[prev_idx], 'name', str(characters[prev_idx])))
+
     def get_round(self):
         """Get the current round number"""
         return int(self.round_number.get())
