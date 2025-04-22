@@ -37,6 +37,24 @@ class QuickEdit:
         self.max_hp_label = ttk.Label(hp_display, text="-")
         self.max_hp_label.pack(side=tk.LEFT)
         
+        # Health modification section
+        mod_frame = ttk.Frame(self.parent_frame)
+        mod_frame.pack(fill=tk.X, pady=10)
+        
+        # Input field
+        ttk.Label(mod_frame, text="Amount:").pack(anchor=tk.W)
+        self.health_mod_var = tk.StringVar()
+        self.health_mod_entry = ttk.Entry(mod_frame, textvariable=self.health_mod_var)
+        self.health_mod_entry.pack(fill=tk.X, pady=(0, 5))
+        
+        # Buttons frame
+        btn_frame = ttk.Frame(mod_frame)
+        btn_frame.pack(fill=tk.X)
+        
+        # Heal and Damage buttons
+        ttk.Button(btn_frame, text="Heal", command=self.heal).pack(side=tk.LEFT, padx=(0, 5))
+        ttk.Button(btn_frame, text="Damage", command=self.damage).pack(side=tk.LEFT)
+        
         # Add some padding at the bottom to maintain spacing
         ttk.Frame(self.parent_frame, height=30).pack(pady=5, fill=tk.X)
 
@@ -50,3 +68,12 @@ class QuickEdit:
             self.name_label.config(text="")
             self.current_hp_label.config(text="-")
             self.max_hp_label.config(text="-")
+            self.health_mod_var.set("")
+            
+    def heal(self):
+        """Placeholder for heal functionality"""
+        pass
+        
+    def damage(self):
+        """Placeholder for damage functionality"""
+        pass
