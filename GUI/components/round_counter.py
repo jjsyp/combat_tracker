@@ -98,7 +98,7 @@ class RoundCounter:
         self.current_character.set(name)
 
     def next_turn(self):
-        """Advance to the next character in the list, cycling to the top if at the end."""
+        """Advance to the next character in the list, cycling to the top if at the end. Increment round if cycling."""
         if not self.combat_started or not self.gui_ref:
             return
         characters = getattr(self.gui_ref, 'characters', [])
@@ -116,11 +116,13 @@ class RoundCounter:
             return
         # Move to next character, or cycle to top
         next_idx = (current_idx + 1) % len(characters)
+        if next_idx == 0:
+            self.increment_round()
         self.set_current_character(getattr(characters[next_idx], 'name', str(characters[next_idx])))
 
         
     def previous_turn(self):
-        """Go to the previous character in the list, cycling to the bottom if at the top."""
+        """Go to the previous character in the list, cycling to the bottom if at the top. Decrement round if cycling (not below 1)."""
         if not self.combat_started or not self.gui_ref:
             return
         characters = getattr(self.gui_ref, 'characters', [])
@@ -138,6 +140,8 @@ class RoundCounter:
             return
         # Move to previous character, or cycle to bottom
         prev_idx = (current_idx - 1) % len(characters)
+        if prev_idx == len(characters) - 1:
+            self.decrement_round()
         self.set_current_character(getattr(characters[prev_idx], 'name', str(characters[prev_idx])))
 
     def get_round(self):
