@@ -89,17 +89,21 @@ class QuickEdit:
         self.current_hp_label.config(text=str(new_health))
         self.health_mod_var.set("")  # Clear the input field
         
-        # Store the current selection
-        selected = self.parent.character_list.character_tree.selection()
+        # Store the character's name before update
+        char_name = self.current_character.name
         
         # Update the list
         self.parent.update_character_list()
         
-        # Restore the selection without triggering selection event
-        if selected:
-            self.parent.character_list.suppress_selection_event = True
-            self.parent.character_list.character_tree.selection_set(selected)
-            self.parent.character_list.suppress_selection_event = False
+        # Find and select the character by name in the updated list
+        tree = self.parent.character_list.character_tree
+        for item in tree.get_children():
+            values = tree.item(item)['values']
+            if values and values[0] == char_name:  # values[0] is the name column
+                self.parent.character_list.suppress_selection_event = True
+                tree.selection_set(item)
+                self.parent.character_list.suppress_selection_event = False
+                break
             
     def heal(self):
         """Heal the character by the specified amount"""
