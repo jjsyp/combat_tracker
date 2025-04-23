@@ -14,6 +14,7 @@ class CharacterList:
         self.parent = parent
         self.popup_entry = None
         self.round_counter = getattr(parent, 'round_counter', None)
+        self.suppress_selection_event = False
         
         # Set up trace on current character if available
         if self.round_counter and hasattr(self.round_counter, 'current_character'):
@@ -310,6 +311,8 @@ class CharacterList:
         
     def on_select(self, event):
         """Handle selection of a character"""
+        if self.suppress_selection_event:
+            return
         character = self.get_selected_character()
         if hasattr(self.parent, 'on_character_selected'):
             self.parent.on_character_selected(character)

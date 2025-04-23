@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import ttk
+from tkinter import ttk, messagebox
 
 class QuickEdit:
     def __init__(self, parent_frame, parent):
@@ -88,7 +88,18 @@ class QuickEdit:
         self.current_character.health = new_health
         self.current_hp_label.config(text=str(new_health))
         self.health_mod_var.set("")  # Clear the input field
-        self.parent.update_character_list()  # Update the main display
+        
+        # Store the current selection
+        selected = self.parent.character_list.character_tree.selection()
+        
+        # Update the list
+        self.parent.update_character_list()
+        
+        # Restore the selection without triggering selection event
+        if selected:
+            self.parent.character_list.suppress_selection_event = True
+            self.parent.character_list.character_tree.selection_set(selected)
+            self.parent.character_list.suppress_selection_event = False
             
     def heal(self):
         """Heal the character by the specified amount"""
