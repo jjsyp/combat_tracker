@@ -164,9 +164,13 @@ class CombatTrackerGUI:
         deleted_char = self.characters.pop(idx)
         # If the deleted character was the current turn, advance turn or clear
         if hasattr(self.round_counter, "current_character"):
-            if self.round_counter.current_character.get() == getattr(deleted_char, 'name', str(deleted_char)):
+            current_name = self.round_counter.current_character.get()
+            if current_name == getattr(deleted_char, 'name', str(deleted_char)):
                 if self.characters:
-                    self.round_counter.next_turn()
+                    # If we're deleting the last character in turn order, increment round
+                    if idx == len(self.characters):
+                        self.round_counter.increment_round()
+                    self.round_counter.set_current_character(getattr(self.characters[0], 'name', str(self.characters[0])))
                 else:
                     self.round_counter.set_current_character("-")
         self.update_character_list()
