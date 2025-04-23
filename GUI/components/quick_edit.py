@@ -30,11 +30,11 @@ class QuickEdit:
         hp_display = ttk.Frame(self.health_frame)
         hp_display.pack(fill=tk.X, padx=5, pady=5)
         
-        ttk.Label(hp_display, text="Current HP:").pack(side=tk.LEFT, padx=(0, 5))
+        ttk.Label(hp_display, text="Current:").pack(side=tk.LEFT, padx=(0, 5))
         self.current_hp_label = ttk.Label(hp_display, text="-")
         self.current_hp_label.pack(side=tk.LEFT, padx=(0, 10))
         
-        ttk.Label(hp_display, text="Max HP:").pack(side=tk.LEFT, padx=(0, 5))
+        ttk.Label(hp_display, text="Max:").pack(side=tk.LEFT, padx=(0, 5))
         self.max_hp_label = ttk.Label(hp_display, text="-")
         self.max_hp_label.pack(side=tk.LEFT)
         
