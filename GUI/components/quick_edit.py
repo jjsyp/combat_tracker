@@ -12,6 +12,7 @@ class QuickEdit:
         """
         self.parent_frame = parent_frame
         self.parent = parent
+        self.current_character = None
         self.setup_quick_edit()
         
     def setup_quick_edit(self):
@@ -60,6 +61,7 @@ class QuickEdit:
 
     def show_character(self, character):
         """Update the quick edit panel with the selected character"""
+        self.current_character = character
         if character:
             self.name_label.config(text=character.name)
             self.current_hp_label.config(text=str(character.health))
@@ -70,10 +72,46 @@ class QuickEdit:
             self.max_hp_label.config(text="-")
             self.health_mod_var.set("")
             
+    def _validate_amount(self):
+        """Validate and get the health modification amount"""
+        try:
+            amount = int(self.health_mod_var.get())
+            if amount < 0:
+                raise ValueError("Amount must be positive")
+            return amount
+        except ValueError as e:
+            messagebox.showerror("Invalid Input", str(e) if str(e) != "invalid literal for int() with base 10: ''" else "Please enter a number")
+            return None
+            
+    def _update_health(self, new_health):
+        """Update character's health and display"""
+        self.current_character.health = new_health
+        self.current_hp_label.config(text=str(new_health))
+        self.health_mod_var.set("")  # Clear the input field
+        self.parent.update_character_list()  # Update the main display
+            
     def heal(self):
-        """Placeholder for heal functionality"""
-        pass
+        """Heal the character by the specified amount"""
+        if not self.current_character:
+            return
+            
+        amount = self._validate_amount()
+        if amount is None:
+            return
+            
+        # Calculate new health, capped at max HP
+        new_health = min(self.current_character.health + amount, self.current_character.maxhp)
+        self._update_health(new_health)
         
     def damage(self):
-        """Placeholder for damage functionality"""
-        pass
+        """Damage the character by the specified amount"""
+        if not self.current_character:
+            return
+            
+        amount = self._validate_amount()
+        if amount is None:
+            return
+            
+        # Calculate new health, minimum of 0
+        new_health = max(self.current_character.health - amount, 0)
+        self._update_health(new_health)
