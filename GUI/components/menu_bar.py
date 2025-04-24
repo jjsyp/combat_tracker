@@ -80,5 +80,5 @@ class MenuBar:
             
     def show_templates(self):
         """Show the templates management screen"""
-        # TODO: Implement templates management
-        messagebox.showinfo("Coming Soon", "Templates management feature is coming soon!")
+        from GUI.components.templates_screen import TemplatesScreen
+        TemplatesScreen(self.root, self.parent)

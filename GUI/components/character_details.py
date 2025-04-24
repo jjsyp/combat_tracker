@@ -13,6 +13,7 @@ class CharacterDetails:
         """
         self.parent_frame = parent_frame
         self.parent = parent
+        self.template_mode = False
         self.setup_character_details()
         
     def setup_character_details(self):
@@ -38,15 +39,26 @@ class CharacterDetails:
         self.bonus_entry.pack(fill=tk.X, pady=(0, 10))
         self.bonus_entry.bind('<Return>', lambda e: self.add_character())
         
-        # Health Frame
+        # Health/Max HP Frame
         health_frame = ttk.Frame(self.parent_frame)
         health_frame.pack(fill=tk.X, pady=(0, 10))
         
-        ttk.Label(health_frame, text="Health:").pack(side=tk.LEFT)
+        # In template mode, show Max HP. In normal mode, show Health
+        self.health_label = ttk.Label(health_frame, text="Health:")
+        self.max_hp_label = ttk.Label(health_frame, text="Max HP:")
+        
+        # Only one will be visible based on mode
         self.health_var = tk.StringVar()
         self.health_entry = ttk.Entry(health_frame, textvariable=self.health_var, width=8)
-        self.health_entry.pack(side=tk.LEFT, padx=5)
         self.health_entry.bind('<Return>', lambda e: self.add_character())
+        
+        # Configure initial state
+        if hasattr(self, 'template_mode') and self.template_mode:
+            self.max_hp_label.pack(side=tk.LEFT)
+            self.health_entry.pack(side=tk.LEFT, padx=5)
+        else:
+            self.health_label.pack(side=tk.LEFT)
+            self.health_entry.pack(side=tk.LEFT, padx=5)
         
         # AC Entry
         ttk.Label(self.parent_frame, text="Armor Class:").pack(anchor=tk.W)
@@ -84,13 +96,13 @@ class CharacterDetails:
                 messagebox.showerror("Error", "Please enter a name for the character")
                 return
                 
-            initial_health = int(self.health_var.get() or 0)
+            health_value = int(self.health_var.get() or 0)
             char = Character(
                 name=name,
                 initiative=int(self.initiative_var.get() or 0),
                 initiative_bonus=int(self.bonus_var.get() or 0),
-                health=initial_health,
-                maxhp=initial_health,
+                health=health_value,
+                maxhp=health_value,  # In template mode, health value is max HP
                 ac=int(self.ac_var.get() or 0)
             )
             
@@ -102,9 +114,8 @@ class CharacterDetails:
                     if field_name:  # Only add if field name is not empty
                         char.custom_fields[field_name] = entries[1].get()
             
-            # Add to character list and update display
-            self.parent.characters.append(char)
-            self.parent.update_character_list()
+            # Add character through parent's add_character method
+            self.parent.add_character(char)
             
             # Clear the form for the next character
             self.clear_character_details()
@@ -125,6 +136,32 @@ class CharacterDetails:
             
         # Reset custom fields frame size
         self.custom_fields_frame.configure(height=20)
+        
+    def set_template_mode(self, enabled):
+        """Enable or disable template mode"""
+        self.template_mode = enabled
+        if enabled:
+            self.health_label.pack_forget()
+            self.max_hp_label.pack(side=tk.LEFT)
+        else:
+            self.max_hp_label.pack_forget()
+            self.health_label.pack(side=tk.LEFT)
+        
+    def show_template(self, template):
+        """Show template data in the form"""
+        self.name_var.set(template.name)
+        self.initiative_var.set(str(template.initiative))
+        self.bonus_var.set(str(template.initiative_bonus))
+        self.health_var.set(str(template.maxhp))
+        self.ac_var.set(str(template.ac))
+        
+        # Clear existing custom fields
+        for widget in self.custom_fields_frame.winfo_children():
+            widget.destroy()
+            
+        # Add template's custom fields
+        for field_name, value in template.custom_fields.items():
+            self.add_custom_field(field_name, value)
 
     def add_custom_field(self, field_name=None, value=None):
         """Add a new custom field to the form"""

@@ -113,9 +113,20 @@ class CombatTrackerGUI:
         # Start with character details visible
         self.show_character_details()
 
-    def add_character(self):
-        """Proxy method to maintain backward compatibility"""
-        self.character_details.add_character()
+    def add_character(self, char=None):
+        """Add a character to the combat tracker
+        
+        Args:
+            char: Optional Character instance. If not provided, creates a new character
+                 using the character details panel.
+        """
+        if char is None:
+            # Proxy to character details panel for backward compatibility
+            self.character_details.add_character()
+        else:
+            # Add provided character to the list
+            self.characters.append(char)
+            self.update_character_list()
 
     def clear_character_details(self):
         """Proxy method to maintain backward compatibility"""
