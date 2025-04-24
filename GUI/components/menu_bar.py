@@ -17,7 +17,7 @@ class MenuBar:
         self.create_menu_bar()
         
     def create_menu_bar(self):
-        """Create the menu bar with File options"""
+        """Create the menu bar with File options and Templates button"""
         menubar = tk.Menu(self.root)
         self.root.config(menu=menubar)
         
@@ -29,6 +29,9 @@ class MenuBar:
         file_menu.add_command(label="Load...", command=self.load_session)
         file_menu.add_separator()
         file_menu.add_command(label="Exit", command=self.root.quit)
+        
+        # Templates button
+        menubar.add_command(label="Templates", command=self.show_templates)
 
     def save_session(self):
         """Save the current session to the default file"""
@@ -74,3 +77,8 @@ class MenuBar:
                 messagebox.showinfo("Success", "Session loaded successfully!")
         except Exception as e:
             messagebox.showerror("Error", f"Failed to load session: {str(e)}")
+            
+    def show_templates(self):
+        """Show the templates management screen"""
+        # TODO: Implement templates management
+        messagebox.showinfo("Coming Soon", "Templates management feature is coming soon!")
