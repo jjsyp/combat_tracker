@@ -145,3 +145,18 @@ class TemplateList:
                 idx = list(self.template_tree.get_children()).index(item)
                 selected.append(self.templates[idx])
         return selected
+        
+    def delete_template(self, template):
+        """Delete a template from disk and memory"""
+        # Remove from disk
+        template_path = os.path.join(self.template_dir, f"{template.name}.json")
+        try:
+            os.remove(template_path)
+        except OSError:
+            pass  # File might not exist
+            
+        # Remove from memory
+        try:
+            self.templates.remove(template)
+        except ValueError:
+            pass  # Template might not be in list

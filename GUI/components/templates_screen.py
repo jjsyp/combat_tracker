@@ -73,14 +73,25 @@ class TemplatesScreen:
         button_frame = ttk.Frame(self.window)
         button_frame.pack(fill=tk.X, padx=10, pady=(0, 10))
         
+        # Left side buttons
+        left_buttons = ttk.Frame(button_frame)
+        left_buttons.pack(side=tk.LEFT, fill=tk.X)
+        
         # Add to Combat button
         ttk.Button(
-            button_frame, 
+            left_buttons, 
             text="Add Selected to Combat",
             command=self.add_selected_to_combat
-        ).pack(side=tk.RIGHT, padx=5)
+        ).pack(side=tk.LEFT, padx=(0, 5))
         
-        # Close button
+        # Delete Selected button
+        ttk.Button(
+            left_buttons,
+            text="Delete Selected",
+            command=self.delete_selected_templates
+        ).pack(side=tk.LEFT)
+        
+        # Close button (right side)
         ttk.Button(
             button_frame,
             text="Close",
@@ -102,3 +113,16 @@ class TemplatesScreen:
             
         # Update the main combat tracker display
         self.parent.update_character_list()
+        
+    def delete_selected_templates(self):
+        """Delete selected templates"""
+        selected_templates = self.template_list.get_selected_templates()
+        if not selected_templates:
+            return
+            
+        # Delete each selected template
+        for template in selected_templates:
+            self.template_list.delete_template(template)
+        
+        # Update the template list display
+        self.template_list.update_template_list()
