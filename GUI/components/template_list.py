@@ -17,6 +17,13 @@ class TemplateList:
         self.gui_ref = gui_ref
         self.templates = []
         
+        # Get the absolute path to the templates directory
+        self.template_dir = os.path.join(
+            os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+            "templates"
+        )
+        os.makedirs(self.template_dir, exist_ok=True)
+        
         # Create template list view
         self.create_template_list()
         
@@ -61,17 +68,14 @@ class TemplateList:
         
     def load_templates(self):
         """Load templates from the templates directory"""
-        template_dir = "templates"
-        os.makedirs(template_dir, exist_ok=True)
         
         self.templates = []
         try:
-            for filename in os.listdir(template_dir):
+            for filename in os.listdir(self.template_dir):
                 if filename.endswith(".json"):
-                    with open(os.path.join(template_dir, filename), 'r') as f:
+                    with open(os.path.join(self.template_dir, filename), 'r') as f:
                         template_data = json.load(f)
-                        template = Character()
-                        template.__dict__.update(template_data)
+                        template = Character.from_dict(template_data)
                         self.templates.append(template)
             
             self.update_template_list()
@@ -124,12 +128,8 @@ class TemplateList:
                     
     def save_template(self, character):
         """Save a character as a template"""
-        # Create templates directory if it doesn't exist
-        template_dir = "templates"
-        os.makedirs(template_dir, exist_ok=True)
-        
         # Save template to file
-        template_path = os.path.join(template_dir, f"{character.name}.json")
+        template_path = os.path.join(self.template_dir, f"{character.name}.json")
         with open(template_path, 'w') as f:
             json.dump(character.__dict__, f, indent=4)
             
