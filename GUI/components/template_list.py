@@ -48,7 +48,7 @@ class TemplateList:
         self.template_tree.heading("AC", text="AC")
         
         # Set column widths
-        self.template_tree.column("Selected", width=30, stretch=False)
+        self.template_tree.column("Selected", width=50, stretch=False)  # Increased width for checkbox
         self.template_tree.column("Name", width=150)
         self.template_tree.column("HP", width=70)
         self.template_tree.column("Initiative", width=70)
@@ -63,8 +63,11 @@ class TemplateList:
         scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
         
         # Bind events
-        self.template_tree.bind("<ButtonRelease-1>", self.on_template_selected)
-        self.template_tree.bind("<Double-1>", self.on_checkbox_clicked)
+        self.template_tree.bind("<ButtonRelease-1>", self.on_click)
+        
+        # Create larger checkbox symbols
+        self.checkbox_unchecked = "☐"  # Larger empty checkbox
+        self.checkbox_checked = "☑"  # Larger checked checkbox
         
     def load_templates(self):
         """Load templates from the templates directory"""
@@ -91,7 +94,7 @@ class TemplateList:
         # Add templates to tree
         for template in self.templates:
             values = (
-                "☐",  # Unchecked checkbox
+                self.checkbox_unchecked,  # Unchecked checkbox
                 template.name,
                 f"{template.health}/{template.maxhp}",
                 template.initiative,
@@ -99,32 +102,33 @@ class TemplateList:
             )
             self.template_tree.insert("", tk.END, values=values)
             
-    def on_template_selected(self, event):
-        """Handle template selection"""
-        selected = self.template_tree.selection()
-        if not selected:
+    def on_click(self, event):
+        """Handle mouse click in the template tree"""
+        # Get the clicked region and item
+        region = self.template_tree.identify_region(event.x, event.y)
+        item = self.template_tree.identify_row(event.y)
+        if not item:
             return
             
-        # Get the template index
-        items = self.template_tree.get_children()
-        idx = items.index(selected[0])
-        template = self.templates[idx]
-        
-        # Update character details panel with template data
-        if hasattr(self.gui_ref, 'character_details'):
-            self.gui_ref.character_details.show_template(template)
-            
-    def on_checkbox_clicked(self, event):
-        """Handle checkbox click"""
-        region = self.template_tree.identify_region(event.x, event.y)
+        # Handle checkbox click
         if region == "cell":
             column = self.template_tree.identify_column(event.x)
             if str(column) == "#1":  # Selected column
-                item = self.template_tree.identify_row(event.y)
-                if item:
-                    current_value = self.template_tree.set(item, "Selected")
-                    new_value = "☑" if current_value == "☐" else "☐"
-                    self.template_tree.set(item, "Selected", new_value)
+                current_value = self.template_tree.set(item, "Selected")
+                new_value = self.checkbox_checked if current_value == self.checkbox_unchecked else self.checkbox_unchecked
+                self.template_tree.set(item, "Selected", new_value)
+                return
+        
+        # Handle template selection (if not clicking checkbox)
+        if region != "nothing":
+            # Get the template index
+            items = self.template_tree.get_children()
+            idx = items.index(item)
+            template = self.templates[idx]
+            
+            # Update character details panel with template data
+            if hasattr(self.gui_ref, 'character_details'):
+                self.gui_ref.character_details.show_template(template)
                     
     def save_template(self, character):
         """Save a character as a template"""
