@@ -104,8 +104,17 @@ class TemplatesScreen:
         if not selected_templates:
             return
             
+        # Keep track of skipped templates
+        skipped_templates = []
+        
         # Add each selected template as a new character
         for template in selected_templates:
+            # Check if a character with this name already exists
+            name_exists = any(char.name == template.name for char in self.parent.characters)
+            if name_exists:
+                skipped_templates.append(template.name)
+                continue
+                
             # Create a copy of the template
             char = template.copy()
             # Add to the main combat tracker
@@ -113,6 +122,16 @@ class TemplatesScreen:
             
         # Update the main combat tracker display
         self.parent.update_character_list()
+        
+        # Show warning if any templates were skipped
+        if skipped_templates:
+            message = "The following characters were not added because their names already exist in combat:\n\n"
+            message += "\n".join(f"- {name}" for name in skipped_templates)
+            tk.messagebox.showwarning(
+                "Duplicate Names",
+                message,
+                parent=self.window
+            )
         
     def delete_selected_templates(self):
         """Delete selected templates"""
