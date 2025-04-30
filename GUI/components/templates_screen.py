@@ -132,6 +132,10 @@ class TemplatesScreen:
                 message,
                 parent=self.window
             )
+            
+        # Deselect all templates
+        for item in self.template_list.template_tree.get_children():
+            self.template_list.template_tree.set(item, "Selected", self.template_list.checkbox_unchecked)
         
     def delete_selected_templates(self):
         """Delete selected templates"""
