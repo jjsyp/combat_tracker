@@ -37,7 +37,7 @@ class TemplateList:
         self.frame.pack(fill=tk.BOTH, expand=True)
         
         # Create treeview
-        columns = ("Selected", "Name", "HP", "AC")
+        columns = ("Selected", "Name", "HP", "AC", "Custom Fields")
         self.template_tree = ttk.Treeview(self.frame, columns=columns, show="headings")
         
         # Set column headings
@@ -45,12 +45,14 @@ class TemplateList:
         self.template_tree.heading("Name", text="Name")
         self.template_tree.heading("HP", text="HP")
         self.template_tree.heading("AC", text="AC")
+        self.template_tree.heading("Custom Fields", text="Custom Fields")
         
         # Set column widths
         self.template_tree.column("Selected", width=50, stretch=False)  # Increased width for checkbox
         self.template_tree.column("Name", width=150)
         self.template_tree.column("HP", width=70)
         self.template_tree.column("AC", width=70)
+        self.template_tree.column("Custom Fields", width=200)
         
         # Add scrollbar
         scrollbar = ttk.Scrollbar(self.frame, orient=tk.VERTICAL, command=self.template_tree.yview)
@@ -91,11 +93,15 @@ class TemplateList:
             
         # Add templates to tree
         for template in self.templates:
+            # Format custom fields as a comma-separated list
+            custom_fields = ", ".join([f"{k}: {v}" for k, v in template.custom_fields.items()])
+            
             values = (
                 self.checkbox_unchecked,  # Unchecked checkbox
                 template.name,
                 f"{template.health}/{template.maxhp}",
-                template.ac
+                template.ac,
+                custom_fields
             )
             self.template_tree.insert("", tk.END, values=values)
             
