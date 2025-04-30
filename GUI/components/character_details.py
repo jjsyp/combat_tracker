@@ -177,6 +177,9 @@ class CharacterDetails:
         # Reset custom fields frame size
         self.custom_fields_frame.configure(height=20)
         
+        # Focus the name entry field
+        self.name_entry.focus()
+        
     def set_template_mode(self, enabled):
         """Enable or disable template mode"""
         self.template_mode = enabled
@@ -206,6 +209,10 @@ class CharacterDetails:
         # Add template's custom fields
         for field_name, value in template.custom_fields.items():
             self.add_custom_field(field_name, value)
+            
+        # Focus and select the name field for easy editing
+        self.name_entry.focus()
+        self.name_entry.select_range(0, tk.END)
 
     def add_custom_field(self, field_name=None, value=None):
         """Add a new custom field to the form"""
