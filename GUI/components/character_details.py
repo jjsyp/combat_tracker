@@ -141,11 +141,39 @@ class CharacterDetails:
         """Enable or disable template mode"""
         self.template_mode = enabled
         if enabled:
+            # Switch to Max HP label
             self.health_label.pack_forget()
             self.max_hp_label.pack(side=tk.LEFT)
+            
+            # Hide initiative fields
+            for widget in self.parent_frame.winfo_children():
+                if isinstance(widget, ttk.Label) and widget.cget("text") in ["Initiative:", "Initiative Bonus:"]:
+                    widget.pack_forget()
+                    
+            self.initiative_entry.pack_forget()
+            self.bonus_entry.pack_forget()
         else:
+            # Switch back to Health label
             self.max_hp_label.pack_forget()
             self.health_label.pack(side=tk.LEFT)
+            
+            # Show initiative fields
+            for i, (label_text, entry) in enumerate([
+                ("Initiative:", self.initiative_entry),
+                ("Initiative Bonus:", self.bonus_entry)
+            ]):
+                # Find or create label
+                label = None
+                for widget in self.parent_frame.winfo_children():
+                    if isinstance(widget, ttk.Label) and widget.cget("text") == label_text:
+                        label = widget
+                        break
+                if not label:
+                    label = ttk.Label(self.parent_frame, text=label_text)
+                
+                # Pack label and entry in order
+                label.pack(anchor=tk.W)
+                entry.pack(fill=tk.X, pady=(0, 10))
         
     def show_template(self, template):
         """Show template data in the form"""

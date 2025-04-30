@@ -37,21 +37,19 @@ class TemplateList:
         self.frame.pack(fill=tk.BOTH, expand=True)
         
         # Create treeview
-        columns = ("Selected", "Name", "HP", "Initiative", "AC")
+        columns = ("Selected", "Name", "HP", "AC")
         self.template_tree = ttk.Treeview(self.frame, columns=columns, show="headings")
         
         # Set column headings
         self.template_tree.heading("Selected", text="")  # Checkbox column
         self.template_tree.heading("Name", text="Name")
         self.template_tree.heading("HP", text="HP")
-        self.template_tree.heading("Initiative", text="Initiative")
         self.template_tree.heading("AC", text="AC")
         
         # Set column widths
         self.template_tree.column("Selected", width=50, stretch=False)  # Increased width for checkbox
         self.template_tree.column("Name", width=150)
         self.template_tree.column("HP", width=70)
-        self.template_tree.column("Initiative", width=70)
         self.template_tree.column("AC", width=70)
         
         # Add scrollbar
@@ -97,7 +95,6 @@ class TemplateList:
                 self.checkbox_unchecked,  # Unchecked checkbox
                 template.name,
                 f"{template.health}/{template.maxhp}",
-                template.initiative,
                 template.ac
             )
             self.template_tree.insert("", tk.END, values=values)
