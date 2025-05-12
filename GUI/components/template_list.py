@@ -3,6 +3,7 @@ from tkinter import ttk
 from character.character import Character
 import os
 import json
+import sys
 
 class TemplateList:
     def __init__(self, parent_frame, gui_ref):
@@ -18,10 +19,15 @@ class TemplateList:
         self.templates = []
         
         # Get the absolute path to the templates directory
-        self.template_dir = os.path.join(
-            os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
-            "templates"
-        )
+        if getattr(sys, 'frozen', False):
+            # Running as PyInstaller bundle
+            self.template_dir = os.path.join(os.path.dirname(sys.executable), "templates")
+        else:
+            # Running in development
+            self.template_dir = os.path.join(
+                os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+                "templates"
+            )
         os.makedirs(self.template_dir, exist_ok=True)
         
         # Create template list view
